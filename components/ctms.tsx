@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   ArrowLeft,
@@ -10,6 +10,7 @@ import {
   CalendarDays,
   AlertTriangle,
   Bell,
+  Building2,
   CheckCircle2,
   ClipboardList,
   Clock3,
@@ -60,7 +61,7 @@ type Role =
   | "hr"
   | "admin"
   | "employee";
-type Status = "In Progress" | "Upcoming" | "Completed";
+type Status = "In Progress" | "Upcoming" | "Completed" | "Rejected";
 type Project = {
   id: string;
   name: string;
@@ -149,6 +150,9 @@ const users: Record<Role, User> = {
     department: "Production",
   },
 };
+const loginDepartments = Array.from(
+  new Set(Object.values(users).map((user) => user.department)),
+).sort((a, b) => a.localeCompare(b));
 
 const projectsSeed: Project[] = [
   {
@@ -223,6 +227,7 @@ const statusColors: Record<Status, string> = {
   "In Progress": "#2563eb",
   Upcoming: "#8b5cf6",
   Completed: "#16a34a",
+  Rejected: "#dc2626",
 };
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 const parseDate = (value: string) => {
@@ -368,6 +373,23 @@ const ceoNotifications = [
     kind: "Project update",
   },
 ];
+type Notification = (typeof ceoNotifications)[number] & {
+  recipient: Role | "all";
+};
+const notificationStorageKey = "cmcsNotifications";
+const readNotifications = (): Notification[] => {
+  if (typeof window === "undefined") return [];
+  const saved = window.localStorage.getItem(notificationStorageKey);
+  if (!saved) return [];
+  try {
+    return JSON.parse(saved) as Notification[];
+  } catch {
+    return [];
+  }
+};
+const defaultNotifications: Notification[] = ceoNotifications.map(
+  (notification) => ({ ...notification, recipient: "ceo" }),
+);
 const quotationSeed = [
   {
     id: "QTN-2026-014",
@@ -399,22 +421,103 @@ const quotationSeed = [
     submitted: "02 Oct 2026",
     status: "Approved",
   },
+  {
+    id: "QTN-2026-006",
+    projectId: "PRJ-2026-0045",
+    project: "Kabul City Documentary",
+    vendor: "Kabul Creative Works",
+    amount: 9600,
+    submittedBy: "Zainab Ahmad",
+    submitted: "29 Sep 2026",
+    status: "Rejected",
+  },
+];
+const invoiceSeed = [
+  {
+    id: "INV-2026-024",
+    projectId: "PRJ-2026-0042",
+    quotationId: "QTN-2026-014",
+    project: "UNDP Community Awareness Videography",
+    amount: 42000,
+    status: "Pending approval",
+    generationStatus: "Generated",
+    paymentStatus: "Not issued",
+  },
+  {
+    id: "INV-2026-021",
+    projectId: "PRJ-2026-0038",
+    quotationId: "QTN-2026-011",
+    project: "National Election Coverage",
+    amount: 58000,
+    status: "Approved",
+    generationStatus: "Generated",
+    paymentStatus: "Unpaid",
+  },
+  {
+    id: "INV-2026-019",
+    projectId: "PRJ-2026-0031",
+    quotationId: "QTN-2026-009",
+    project: "Youth Media Training Series",
+    amount: 19500,
+    status: "Approved",
+    generationStatus: "Generated",
+    paymentStatus: "Paid",
+  },
+  {
+    id: "INV-2026-016",
+    projectId: "PRJ-2026-0045",
+    quotationId: "QTN-2026-006",
+    project: "Kabul City Documentary",
+    amount: 31000,
+    status: "Rejected",
+    generationStatus: "Not generated",
+    paymentStatus: "Not issued",
+  },
+];
+const paymentSeed = [
+  {
+    id: "PAY-2026-017",
+    projectId: "PRJ-2026-0031",
+    quotationId: "QTN-2026-009",
+    project: "Youth Media Training Series",
+    amount: 19500,
+    status: "Paid",
+    generationStatus: "—",
+    paymentStatus: "Paid",
+  },
+  {
+    id: "PAY-2026-014",
+    projectId: "PRJ-2026-0038",
+    quotationId: "QTN-2026-011",
+    project: "National Election Coverage",
+    amount: 29000,
+    status: "Unpaid",
+    generationStatus: "—",
+    paymentStatus: "Unpaid",
+  },
 ];
 
 export function Login({ onLogin }: { onLogin: (u: User) => void }) {
+  const [department, setDepartment] = useState("");
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
   function submit(e: FormEvent) {
     e.preventDefault();
+    const normalizedIdentity = identity.trim().toLowerCase();
     const found = Object.values(users).find(
       (u) =>
-        u.email === identity.trim().toLowerCase() ||
-        u.employeeId.toLowerCase() === identity.trim().toLowerCase(),
+        u.department === department &&
+        (u.email === normalizedIdentity ||
+          u.employeeId.toLowerCase() === normalizedIdentity),
     );
     if (!found || found.password !== password) {
-      setError("Credentials did not match a demo account.");
+      setError(
+        department
+          ? `Those credentials do not match a ${department} account.`
+          : "Select your department to continue.",
+      );
       return;
     }
     onLogin(found);
@@ -449,11 +552,41 @@ export function Login({ onLogin }: { onLogin: (u: User) => void }) {
           </div>
           <form className="auth-form" onSubmit={submit}>
             <label>
+              Department
+              <div className="department-field">
+                <Building2 size={16} aria-hidden="true" />
+                <select
+                  required
+                  value={department}
+                  onChange={(e) => {
+                    setDepartment(e.target.value);
+                    setError("");
+                  }}
+                  aria-label="Select your department"
+                >
+                  <option value="" disabled>
+                    Select your department
+                  </option>
+                  {loginDepartments.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span className="auth-field-help">
+                Use the workspace assigned to your department.
+              </span>
+            </label>
+            <label>
               Employee ID or email
               <input
                 required
                 value={identity}
-                onChange={(e) => setIdentity(e.target.value)}
+                onChange={(e) => {
+                  setIdentity(e.target.value);
+                  setError("");
+                }}
                 placeholder="you@chinar.tv"
               />
             </label>
@@ -464,7 +597,10 @@ export function Login({ onLogin }: { onLogin: (u: User) => void }) {
                   required
                   type={show ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError("");
+                  }}
                   placeholder="Enter password"
                 />
                 <button
@@ -1201,6 +1337,188 @@ function ModulePage({
   );
 }
 
+function FinancePage({
+  projects,
+  onNotify,
+}: {
+  projects: Project[];
+  onNotify: (s: string) => void;
+}) {
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [search, setSearch] = useState("");
+  const [invoices, setInvoices] = useState(invoiceSeed);
+  const [payments, setPayments] = useState(paymentSeed);
+  const [selected, setSelected] = useState<string | null>(null);
+  const records = [
+    ...invoices.map((invoice) => ({ ...invoice, type: "Invoice" as const })),
+    ...payments.map((payment) => ({ ...payment, type: "Payment" as const })),
+  ].filter((record) => {
+    const matchesStatus = statusFilter === "All" || record.status === statusFilter;
+    const matchesType = typeFilter === "All" || record.type === typeFilter;
+    const matchesSearch = `${record.id} ${record.projectId} ${record.project}`
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    return matchesStatus && matchesType && matchesSearch;
+  });
+  const selectedRecord = records.find((record) => record.id === selected);
+  function generateInvoice(invoiceId: string) {
+    setInvoices((current) =>
+      current.map((invoice) =>
+        invoice.id === invoiceId
+          ? { ...invoice, generationStatus: "Generated" }
+          : invoice,
+      ),
+    );
+    onNotify(`${invoiceId} marked as generated.`);
+  }
+  function markPaid(invoiceId: string) {
+    setInvoices((current) => current.map((invoice) =>
+      invoice.id === invoiceId
+        ? { ...invoice, paymentStatus: "Paid" }
+        : invoice,
+    ));
+    setPayments((current) => current.map((payment) =>
+      payment.id === invoiceId
+        ? { ...payment, status: "Paid", paymentStatus: "Paid" }
+        : payment,
+    ));
+    onNotify(`${invoiceId} marked as paid.`);
+  }
+  function updatePaymentStatus(paymentId: string) {
+    setPayments((current) => current.map((payment) =>
+      payment.id === paymentId
+        ? { ...payment, status: "Paid", paymentStatus: "Paid" }
+        : payment,
+    ));
+    onNotify(`${paymentId} marked as paid.`);
+  }
+  return (
+    <section className="page-section">
+      <PageHeader
+        eyebrow="FINANCE / WORKSPACE"
+        title="Finance"
+        copy="Track project invoices, payments and linked financial records."
+        action="Create request"
+        onAction={() => onNotify("Finance request form opened")}
+      />
+      <div className="filter-bar">
+        <label className="custom-filter">
+          Record type
+          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+            <option>All</option>
+            <option>Invoice</option>
+            <option>Payment</option>
+          </select>
+        </label>
+        <label className="custom-filter">
+          Approval status
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option>All</option>
+            <option>Pending approval</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+            <option>Unpaid</option>
+            <option>Paid</option>
+          </select>
+        </label>
+        <label className="inline-search">
+          <Search size={15} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search project ID or record..."
+          />
+        </label>
+      </div>
+      <div className="panel">
+        <div className="list-heading">
+          <span>Record</span>
+          <span>Project</span>
+          <span>Quotation</span>
+          <span>Status</span>
+          <span>Action</span>
+        </div>
+        {records.map((record) => (
+          <div className="list-row" key={`${record.type}-${record.id}`}>
+            <strong>
+              {record.id}
+              <small>{record.type}</small>
+            </strong>
+            <span>
+              {record.projectId}
+              <small>{record.project}</small>
+            </span>
+            <span>
+              {record.quotationId}
+              <small>{record.paymentStatus}</small>
+            </span>
+            <span className={"status-pill " + record.status.toLowerCase().replaceAll(" ", "-")}>
+              {record.status}
+            </span>
+            <button className="text-button" onClick={() => setSelected(record.id)}>
+              Review <ArrowUpRight size={14} />
+            </button>
+          </div>
+        ))}
+        {!records.length && (
+          <div className="empty-state">
+            <Wallet size={28} />
+            <h3>No financial records found</h3>
+            <p>Adjust the status, type or search filters.</p>
+          </div>
+        )}
+      </div>
+      {selectedRecord && (
+        <div className="panel finance-detail-panel">
+          <div className="panel-heading">
+            <div>
+              <span className="eyebrow">{selectedRecord.type} · {selectedRecord.id}</span>
+              <h2>{selectedRecord.project}</h2>
+              <p>Linked Project ID: {selectedRecord.projectId}</p>
+            </div>
+            <button className="icon-button" onClick={() => setSelected(null)} aria-label="Close details">
+              <X size={16} />
+            </button>
+          </div>
+          <div className="quotation-details">
+            <span>Project client<strong>{projects.find((p) => p.id === selectedRecord.projectId)?.client ?? "—"}</strong></span>
+            <span>Amount<strong>{money(selectedRecord.amount)}</strong></span>
+            <span>Quotation ID<strong>{selectedRecord.quotationId}</strong></span>
+            <span>Approval status<strong>{selectedRecord.status}</strong></span>
+            <span>Payment status<strong>{selectedRecord.paymentStatus}</strong></span>
+            {selectedRecord.type === "Invoice" && (
+            <span>Invoice generation<strong>{selectedRecord.generationStatus}</strong></span>
+            )}
+          </div>
+          {selectedRecord.type === "Invoice" &&
+            selectedRecord.generationStatus === "Not generated" && (
+            <div className="dialog-actions">
+            <button className="button button-primary" onClick={() => generateInvoice(selectedRecord.id)}>
+              Generate invoice
+            </button>
+            </div>
+          )}
+          {selectedRecord.type === "Invoice" && selectedRecord.paymentStatus === "Unpaid" && (
+            <div className="dialog-actions">
+              <button className="button button-primary" onClick={() => markPaid(selectedRecord.id)}>
+                Mark as paid
+              </button>
+            </div>
+          )}
+          {selectedRecord.type === "Payment" && selectedRecord.paymentStatus === "Unpaid" && (
+            <div className="dialog-actions">
+              <button className="button button-primary" onClick={() => updatePaymentStatus(selectedRecord.id)}>
+                Mark as paid
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function CeoApproval({
   project,
   approval,
@@ -1247,10 +1565,12 @@ export function CeoApproval({
 
 export function CeoDashboardHome({
   projects,
+  notifications,
   onNavigate,
   onSelect,
 }: {
   projects: Project[];
+  notifications: Notification[];
   onNavigate: (page: string) => void;
   onSelect: (project: Project) => void;
 }) {
@@ -1343,7 +1663,7 @@ export function CeoDashboardHome({
             <Bell size={16} />
           </div>
           <div className="ceo-notification-list">
-            {ceoNotifications.map((notification) => (
+            {notifications.map((notification) => (
               <button
                 key={notification.id}
                 onClick={() =>
@@ -1406,10 +1726,8 @@ function CeoApprovals({
   const pending = projects
     .filter(
       (project) =>
-        !approvals[project.id] ||
-        approvals[project.id].status === "Pending approval",
-    )
-    .slice(0, 2);
+        approvals[project.id]?.status === "Pending approval",
+    );
   return (
     <section className="page-section">
       <PageHeader
@@ -1481,12 +1799,19 @@ function CeoApprovals({
 }
 
 function QuotationsPage({
+  projects,
   quotationApprovals,
   onDecision,
 }: {
+  projects: Project[];
   quotationApprovals: Record<string, { status: string; comment: string }>;
   onDecision: (id: string, status: string, comment: string) => void;
 }) {
+  const [statusFilter, setStatusFilter] = useState("All");
+  const filteredQuotations = quotationSeed.filter((quotation) => {
+    const status = quotationApprovals[quotation.id]?.status ?? quotation.status;
+    return statusFilter === "All" || status === statusFilter;
+  });
   return (
     <section className="page-section">
       <PageHeader
@@ -1494,15 +1819,37 @@ function QuotationsPage({
         title="Quotation management"
         copy="Review supplier quotations linked to their CMCS project IDs."
       />
+      <div className="filter-bar">
+        <label className="custom-filter">
+          Filter quotations
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="All">All quotations</option>
+            <option value="Pending approval">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </label>
+      </div>
       <div className="quotation-list">
-        {quotationSeed.map((quotation) => (
+        {filteredQuotations.map((quotation) => (
           <QuotationCard
             key={quotation.id}
             quotation={quotation}
+            project={projects.find((item) => item.id === quotation.projectId)}
             decision={quotationApprovals[quotation.id]}
             onDecision={onDecision}
           />
         ))}
+        {!filteredQuotations.length && (
+          <div className="empty-state">
+            <FileText size={28} />
+            <h3>No quotations found</h3>
+            <p>Choose another approval status to view quotations.</p>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -1687,10 +2034,12 @@ function EmployeesPage({ projects }: { projects: Project[] }) {
 
 function QuotationCard({
   quotation,
+  project,
   decision,
   onDecision,
 }: {
   quotation: (typeof quotationSeed)[number];
+  project?: Project;
   decision?: { status: string; comment: string };
   onDecision: (id: string, status: string, comment: string) => void;
 }) {
@@ -1722,7 +2071,21 @@ function QuotationCard({
           Quoted amount<strong>{money(quotation.amount)}</strong>
         </span>
         <span>
-          Linked project<strong>{quotation.projectId}</strong>
+          Project ID<strong>{quotation.projectId}</strong>
+        </span>
+        <span>
+          Client<strong>{project?.client ?? quotation.project}</strong>
+        </span>
+        <span>
+          Project owner<strong>{project?.owner ?? "Project owner unavailable"}</strong>
+        </span>
+        <span>
+          Schedule
+          <strong>
+            {project
+              ? `${formatDate(project.start)} → ${formatDate(project.end)}`
+              : "Project details unavailable"}
+          </strong>
         </span>
       </div>
       {status === "Pending approval" && (
@@ -1770,11 +2133,16 @@ export function Dashboard({
   const [approvals, setApprovals] = useState<
     Record<string, { status: Approval; comment: string }>
   >({});
+  const [notifications, setNotifications] =
+    useState<Notification[]>(defaultNotifications);
   const [quotationApprovals, setQuotationApprovals] = useState<
     Record<string, { status: string; comment: string }>
   >({});
   const [toast, setToast] = useState("");
   const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    setNotifications([...defaultNotifications, ...readNotifications()]);
+  }, []);
   const filtered = useMemo(
     () =>
       projects.filter(
@@ -1792,16 +2160,39 @@ export function Dashboard({
     setToast(text);
     window.setTimeout(() => setToast(""), 2600);
   }
+  function addNotification(notification: Omit<Notification, "id" | "time">) {
+    const next: Notification = {
+      ...notification,
+      id: `NTF-${Date.now()}`,
+      time: "Just now",
+    };
+    const updated = [...readNotifications(), next];
+    window.localStorage.setItem(notificationStorageKey, JSON.stringify(updated));
+    setNotifications([...defaultNotifications, ...updated]);
+  }
   function saveProject(project: Project) {
     if (role === "ceo") {
       notify("CEO accounts have read-only project permissions.");
       return;
     }
+    const existing = projects.some((item) => item.id === project.id);
     setProjects((current) =>
-      current.some((item) => item.id === project.id)
+      existing
         ? current.map((item) => (item.id === project.id ? project : item))
         : [project, ...current],
     );
+    if (!existing && role === "hoo") {
+      setApprovals((current) => ({
+        ...current,
+        [project.id]: { status: "Pending approval", comment: "" },
+      }));
+      addNotification({
+        title: "New project requires approval",
+        detail: `Head of Operations submitted ${project.name}.`,
+        kind: "Project approval",
+        recipient: "ceo",
+      });
+    }
     setDialog(null);
     notify("Project saved successfully");
   }
@@ -1810,9 +2201,28 @@ export function Dashboard({
       ...current,
       [project.id]: { status, comment },
     }));
+    if (status === "Approved" || status === "Rejected") {
+      setProjects((current) =>
+        current.map((item) =>
+          item.id === project.id
+            ? { ...item, status: status === "Approved" ? "Upcoming" : "Rejected" }
+            : item,
+        ),
+      );
+      addNotification({
+        title: `Project ${status.toLowerCase()}`,
+        detail: `${project.name} was ${status.toLowerCase()} by the CEO.`,
+        kind: "Project update",
+        recipient: "hoo",
+      });
+    }
     setSelected(null);
     notify(`Project ${status.toLowerCase()}.`);
   }
+  const visibleNotifications = notifications.filter(
+    (notification) =>
+      notification.recipient === "all" || notification.recipient === role,
+  );
   function updateQuotation(id: string, status: string, comment: string) {
     setQuotationApprovals((current) => ({
       ...current,
@@ -1865,7 +2275,9 @@ export function Dashboard({
                       ? quotationSeed.filter(
                           (item) => item.status === "Pending approval",
                         ).length
-                      : 2}
+                        : Object.values(approvals).filter(
+                            (item) => item.status === "Pending approval",
+                          ).length}
                 </span>
               )}
             </button>
@@ -1915,6 +2327,7 @@ export function Dashboard({
             (isCeo ? (
               <CeoDashboardHome
                 projects={projects}
+                notifications={visibleNotifications}
                 onNavigate={setActive}
                 onSelect={setSelected}
               />
@@ -1935,8 +2348,15 @@ export function Dashboard({
           )}
           {active === "Quotations" && (
             <QuotationsPage
+              projects={projects}
               quotationApprovals={quotationApprovals}
               onDecision={updateQuotation}
+            />
+          )}
+          {active === "Finance" && (
+            <FinancePage
+              projects={projects}
+              onNotify={notify}
             />
           )}
           {active === "Notifications" && (
@@ -1947,7 +2367,7 @@ export function Dashboard({
                 copy="Approval requests and operational updates for the CEO."
               />
               <div className="panel ceo-notification-list">
-                {ceoNotifications.map((notification) => (
+                {visibleNotifications.map((notification) => (
                   <button
                     key={notification.id}
                     onClick={() =>
@@ -2037,7 +2457,6 @@ export function Dashboard({
             [
               "Assignments",
               "People & attendance",
-              "Finance",
               "Documents",
               "Reports",
               "Settings",
@@ -2093,7 +2512,7 @@ export function Dashboard({
                 Progress<strong>{selected.progress}% complete</strong>
               </span>
             </div>
-            {isCeo ? (
+            {isCeo && approvals[selected.id]?.status === "Pending approval" ? (
               <CeoApproval
                 project={selected}
                 approval={approvals[selected.id]}
@@ -2107,15 +2526,17 @@ export function Dashboard({
                 >
                   Close
                 </button>
-                <button
-                  className="button button-primary"
-                  onClick={() => {
-                    setSelected(null);
-                    setDialog(selected);
-                  }}
-                >
-                  Edit project
-                </button>
+                {!isCeo && (
+                  <button
+                    className="button button-primary"
+                    onClick={() => {
+                      setSelected(null);
+                      setDialog(selected);
+                    }}
+                  >
+                    Edit project
+                  </button>
+                )}
               </div>
             )}
           </div>
