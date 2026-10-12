@@ -31,6 +31,7 @@ export type Project = {
   status: Status;
   department: string;
   budget: number;
+  assignedEmployees?: string[];
 };
 
 export type Approval = "Pending approval" | "Approved" | "Rejected";
@@ -53,6 +54,44 @@ export type Quotation = {
   submittedBy: string;
   submitted: string;
   status: string;
+  items?: QuotationItem[];
+  taxRate?: number;
+  subtotal?: number;
+  taxAmount?: number;
+  total?: number;
+  history?: QuotationHistory[];
+  revisionRequest?: string;
+  submittedTo?: Role[];
+  quotationDate?: string;
+  validity?: string;
+  customerDetails?: string;
+  contactPerson?: string;
+  paymentTerm?: string;
+  deliveryTime?: string;
+  warranty?: string;
+  mediaRights?: number;
+  discount?: number;
+  discountType?: "fixed" | "percentage";
+  notes?: string;
+};
+
+export type QuotationItem = {
+  id: string;
+  itemNo?: string;
+  category?: string;
+  subcategory?: string;
+  description: string;
+  quantity: number;
+  days: number;
+  unitPrice: number;
+  taxRate: number;
+};
+
+export type QuotationHistory = {
+  status: string;
+  date: string;
+  actor: string;
+  note?: string;
 };
 
 export type Invoice = {

@@ -61,6 +61,12 @@ export function ProjectDetailModal({
           <span>
             Department<strong>{selected.department}</strong>
           </span>
+          {selected.assignedEmployees?.length ? (
+            <span>
+              Assigned Employees
+              <strong>{selected.assignedEmployees.join(", ")}</strong>
+            </span>
+          ) : null}
           <span>
             Production Budget<strong>{money(selected.budget)}</strong>
           </span>

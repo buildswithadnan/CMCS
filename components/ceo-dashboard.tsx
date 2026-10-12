@@ -118,7 +118,6 @@ const navigation: Array<{
   { label: "Notifications", icon: Bell, count: 4 },
   { label: "Audit Logs", icon: ShieldCheck },
   { label: "Archive", icon: PanelLeft },
-  { label: "Settings", icon: Settings },
 ];
 
 const money = (value: number) => `$${value.toLocaleString("en-US")}`;
@@ -211,6 +210,7 @@ export function CeoDashboard({
   return (
     <div className="app-shell is-visible ceo-shell">
       <aside
+        id="ceo-navigation"
         className={"sidebar ceo-sidebar " + (navOpen ? "mobile-open" : "")}
       >
         <div className="brand">
@@ -237,7 +237,10 @@ export function CeoDashboard({
             <div className="ceo-nav-group" key={label}>
               <button
                 className={"nav-item " + (active === label ? "active" : "")}
-                onClick={() => setActive(label)}
+                onClick={() => {
+                  setActive(label);
+                  setNavOpen(false);
+                }}
               >
                 <NavIcon className="nav-icon" size={17} />
                 {label}
@@ -249,7 +252,13 @@ export function CeoDashboard({
               {children && active === label && (
                 <div className="ceo-subnav">
                   {children.map((child) => (
-                    <button key={child} onClick={() => setActive(child)}>
+                    <button
+                      key={child}
+                      onClick={() => {
+                        setActive(child);
+                        setNavOpen(false);
+                      }}
+                    >
                       {child}
                     </button>
                   ))}
@@ -284,12 +293,21 @@ export function CeoDashboard({
           </div>
         </div>
       </aside>
+      {navOpen && (
+        <button
+          className="sidebar-backdrop"
+          onClick={() => setNavOpen(false)}
+          aria-label="Close navigation"
+        />
+      )}
       <main className="main-content">
         <header className="topbar ceo-topbar">
           <button
             className="menu-button"
             onClick={() => setNavOpen(true)}
             aria-label="Open navigation"
+            aria-expanded={navOpen}
+            aria-controls="ceo-navigation"
           >
             <Menu size={20} />
           </button>

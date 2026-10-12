@@ -30,10 +30,12 @@ export function DashboardHome({
   projects,
   onNavigate,
   onSelect,
+  createLabel = "New project",
 }: {
   projects: Project[];
   onNavigate: (s: string) => void;
   onSelect: (p: Project) => void;
+  createLabel?: string;
 }) {
   const metrics = {
     total: projects.length,
@@ -53,7 +55,7 @@ export function DashboardHome({
         eyebrow="WORKSPACE / OVERVIEW"
         title="Good morning"
         copy="Here is the latest pulse across your CMCS workspace."
-        action="New project"
+        action={createLabel}
         onAction={() => onNavigate("Projects")}
       />
       <section className="stat-grid">

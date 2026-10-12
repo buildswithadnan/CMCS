@@ -14,13 +14,19 @@ import {
   LogOut,
   Menu,
   Search,
-  Settings,
   ShieldCheck,
   Users,
   Wallet,
   X,
 } from "lucide-react";
-import { Approval, Notification, Project, Role, User } from "../lib/types";
+import {
+  Approval,
+  Notification,
+  Project,
+  Quotation,
+  Role,
+  User,
+} from "../lib/types";
 import {
   defaultNotifications,
   notificationStorageKey,
@@ -78,6 +84,8 @@ export function Dashboard({
     ) ?? "employee";
 
   const isCeo = role === "ceo";
+  const isHoo = role === "hoo";
+  const isFinance = role === "finance";
   const [active, setActive] = useState("Dashboard");
   const [projects, setProjects] = useState<Project[]>(projectsSeed);
   const [customFilter, setCustomFilter] = useState("All");
@@ -130,8 +138,12 @@ export function Dashboard({
   }
 
   function saveProject(project: Project) {
-    if (role === "ceo") {
-      notify("CEO accounts have read-only project permissions.");
+    if (role === "ceo" || isFinance) {
+      notify(
+        isFinance
+          ? "Finance accounts cannot create projects."
+          : "CEO accounts have read-only project permissions.",
+      );
       return;
     }
     const existing = projects.some((item) => item.id === project.id);
@@ -188,6 +200,21 @@ export function Dashboard({
     notify(`Quotation ${status.toLowerCase()}.`);
   }
 
+  function notifyQuotationSubmission(quotation: Quotation, project: Project) {
+    addNotification({
+      title: "Quotation requires approval",
+      detail: `${quotation.id} for ${project.name} was submitted by Finance.`,
+      kind: "Quotation",
+      recipient: "ceo",
+    });
+    addNotification({
+      title: "Quotation ready for review",
+      detail: `${quotation.id} for ${project.name} is ready for HOO review.`,
+      kind: "Quotation",
+      recipient: "hoo",
+    });
+  }
+
   const visibleNotifications = notifications.filter(
     (notification) =>
       notification.recipient === "all" || notification.recipient === role,
@@ -196,8 +223,15 @@ export function Dashboard({
   const visibleNav = isCeo ? ceoNav : nav;
 
   return (
-    <div className="app-shell is-visible">
-      <aside className={"sidebar " + (mobile ? "mobile-open" : "")}>
+    <div className={"app-shell is-visible " + (isHoo ? "heo-shell" : "")}>
+      <aside
+        id="main-navigation"
+        className={
+          "sidebar " +
+          (isHoo ? "heo-sidebar " : "") +
+          (mobile ? "mobile-open" : "")
+        }
+      >
         <div className="brand">
           <div className="brand-mark">
             <img src="/assets/chinar-logo.png" alt="CMCS" />
@@ -214,8 +248,9 @@ export function Dashboard({
             <X size={18} />
           </button>
         </div>
-        <div className="role-chip">
-          <ShieldCheck size={14} /> {user.role}
+        <div className={isHoo ? "heo-role-badge" : "role-chip"}>
+          <ShieldCheck size={14} />{" "}
+          {isHoo ? "HEO CONTROL CENTRE" : user.role}
         </div>
         <nav className="primary-nav">
           {visibleNav.map(({ label, icon: Icon }) => (
@@ -248,10 +283,6 @@ export function Dashboard({
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <button className="nav-item" onClick={() => setActive("Settings")}>
-            <Settings size={17} />
-            Settings
-          </button>
           <div className="user-mini">
             <div className="avatar">
               {user.firstName.slice(0, 2).toUpperCase()}
@@ -266,12 +297,21 @@ export function Dashboard({
           </div>
         </div>
       </aside>
+      {mobile && (
+        <button
+          className="sidebar-backdrop"
+          onClick={() => setMobile(false)}
+          aria-label="Close navigation"
+        />
+      )}
       <main className="main-content">
         <header className="topbar">
           <button
             className="menu-button"
             onClick={() => setMobile(true)}
             aria-label="Open navigation"
+            aria-expanded={mobile}
+            aria-controls="main-navigation"
           >
             <Menu size={20} />
           </button>
@@ -295,11 +335,20 @@ export function Dashboard({
                 onNavigate={setActive}
                 onSelect={setSelected}
               />
+            ) : isFinance ? (
+              <FinancePage
+                projects={projects}
+                onNotify={notify}
+                onQuotationSubmitted={notifyQuotationSubmission}
+              />
             ) : (
               <DashboardHome
                 projects={projects}
                 onNavigate={setActive}
                 onSelect={setSelected}
+                createLabel={
+                  isHoo ? "Create project" : isFinance ? undefined : "New project"
+                }
               />
             ))}
           {active === "Project Approvals" && (
@@ -321,6 +370,7 @@ export function Dashboard({
             <FinancePage
               projects={projects}
               onNotify={notify}
+              onQuotationSubmitted={notifyQuotationSubmission}
             />
           )}
           {active === "Notifications" && (
@@ -361,10 +411,20 @@ export function Dashboard({
           {active === "Projects" && (
             <section className="page-section">
               <PageHeader
-                eyebrow="OPERATIONS / PROJECTS"
+                eyebrow={isHoo ? "OPERATIONS CONTROL CENTRE / PROJECTS" : "OPERATIONS / PROJECTS"}
                 title="Projects"
-                copy="Track approved work from start to completion."
-                action={isCeo ? undefined : "New project"}
+                copy={
+                  isHoo
+                    ? "Create and coordinate project submissions across production teams."
+                    : "Track approved work from start to completion."
+                }
+                action={
+                  isCeo || isFinance
+                    ? undefined
+                    : isHoo
+                      ? "Create project"
+                      : "New project"
+                }
                 onAction={() => setDialog("new")}
               />
               <div className="filter-bar">
@@ -427,11 +487,14 @@ export function Dashboard({
           )}
         </div>
       </main>
-      {(dialog === "new" || dialog) && !isCeo && (
+      {(dialog === "new" || dialog) && !isCeo && !isFinance && (
         <ProjectDialog
           project={dialog === "new" ? undefined : dialog}
           onClose={() => setDialog(null)}
           onSave={saveProject}
+          currentUser={user}
+          existingProjectIds={projects.map((project) => project.id)}
+          isHoo={isHoo}
         />
       )}
       {selected && (
