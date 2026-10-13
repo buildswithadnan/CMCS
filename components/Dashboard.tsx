@@ -113,6 +113,7 @@ const administratorNav = [
 const administrationEmployeeNav = [
   { label: "Dashboard", icon: LayoutDashboard },
   { label: "Administrative Tasks", icon: ClipboardList },
+  { label: "Employees", icon: Users },
   { label: "Documents & Records", icon: FileText },
   { label: "Assets & Inventory", icon: Package },
   { label: "Office Maintenance", icon: Settings2 },
@@ -460,10 +461,13 @@ export function Dashboard({
               onNotify={notify}
             />
           )}
-          {isAdministrationEmployee && active !== "Dashboard" && (
+          {isAdministrationEmployee && active !== "Dashboard" && active !== "Employees" && (
             <AdministrationEmployeePage active={active} user={user} onNotify={notify} />
           )}
-          {active === "Notifications" && (
+          {isAdministrationEmployee && active === "Employees" && (
+            <EmployeesPage projects={projects} isAdministrator />
+          )}
+          {active === "Notifications" && !isTechnical && !isAdministrationEmployee && (
             <section className="page-section">
               <PageHeader
                 eyebrow="EXECUTIVE / NOTIFICATIONS"
@@ -564,7 +568,7 @@ export function Dashboard({
               />
             </section>
           )}
-          {(active === "Employees" || active === "People & attendance") && (
+          {((active === "Employees" && !isAdministrationEmployee) || active === "People & attendance") && (
             <EmployeesPage projects={projects} isAdministrator={isAdministrator} />
           )}
           {[
