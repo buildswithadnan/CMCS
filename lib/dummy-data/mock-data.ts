@@ -10,6 +10,8 @@ import {
   Status,
   User,
   AttendanceItem,
+  EmployeeTask,
+  EquipmentAssignment,
 } from "../types";
 
 export const users: Record<Role, User> = {
@@ -46,7 +48,7 @@ export const users: Record<Role, User> = {
     password: "ChinarTech@2026",
     name: "Shoaib Ahmad",
     firstName: "Shoaib",
-    role: "Technical Manager",
+    role: "Technical Employee",
     department: "Technical",
   },
   finance: {
@@ -74,6 +76,15 @@ export const users: Record<Role, User> = {
     name: "Mohammad Wali",
     firstName: "Mohammad",
     role: "System Administrator",
+    department: "Administration",
+  },
+  administrationEmployee: {
+    employeeId: "CHN-ADMIN-001",
+    email: "admin.employee@demo.chinar.tv",
+    password: "ChinarAdminEmployee@2026",
+    name: "Maryam Rahimi",
+    firstName: "Maryam",
+    role: "Administration Employee",
     department: "Administration",
   },
   employee: {
@@ -187,6 +198,63 @@ export const projectsSeed: Project[] = [
     status: "In Progress",
     department: "Technical",
     budget: 22500,
+  },
+];
+
+export const technicalTasksSeed: EmployeeTask[] = [
+  {
+    id: "TSK-TECH-001",
+    projectId: "PRJ-2026-0048",
+    title: "Configure live stream encoder",
+    description: "Prepare the primary and backup streaming encoders for the sports event.",
+    dueDate: "2026-10-20",
+    status: "In Progress",
+    progress: 65,
+    priority: "High",
+    assignedTo: "Shoaib Ahmad",
+  },
+  {
+    id: "TSK-TECH-002",
+    projectId: "PRJ-2026-0029",
+    title: "Test field audio kit",
+    description: "Complete audio tests and document the kit readiness for the radio broadcast.",
+    dueDate: "2026-10-12",
+    status: "Completed",
+    progress: 100,
+    priority: "Medium",
+    assignedTo: "Shoaib Ahmad",
+  },
+  {
+    id: "TSK-TECH-003",
+    projectId: "PRJ-2026-0048",
+    title: "Prepare backup network plan",
+    description: "Document the fallback connectivity plan and share it with the operations team.",
+    dueDate: "2026-10-19",
+    status: "Pending",
+    progress: 0,
+    priority: "Medium",
+    assignedTo: "Shoaib Ahmad",
+  },
+];
+
+export const technicalEquipmentSeed: EquipmentAssignment[] = [
+  {
+    id: "EQ-TECH-014",
+    name: "Blackmagic ATEM switcher",
+    category: "Broadcast",
+    projectId: "PRJ-2026-0048",
+    assignedTo: "Shoaib Ahmad",
+    condition: "Good",
+    returnDate: "2026-10-25",
+  },
+  {
+    id: "EQ-TECH-021",
+    name: "Sennheiser field audio kit",
+    category: "Audio",
+    projectId: "PRJ-2026-0029",
+    assignedTo: "Shoaib Ahmad",
+    condition: "Needs service",
+    returnDate: "2026-10-16",
   },
 ];
 

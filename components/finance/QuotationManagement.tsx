@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FormEvent, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -115,15 +115,17 @@ export function QuotationManagement({
   projects,
   onNotify,
   onQuotationSubmitted,
+  initialProjectId,
 }: {
   projects: Project[];
   onNotify: (message: string) => void;
   onQuotationSubmitted?: (quotation: Quotation, project: Project) => void;
+  initialProjectId?: string | null;
 }) {
   const [quotations, setQuotations] = useState<Quotation[]>(() =>
-    projects.map((project, index) => {
+    projects.flatMap((project) => {
       const seed = quotationSeed.find((quotation) => quotation.projectId === project.id);
-      return enrich(seed ? { ...seed } : makeQuotation(project, index));
+      return seed ? [enrich({ ...seed })] : [];
     }),
   );
   const [view, setView] = useState<View>("list");
@@ -134,9 +136,12 @@ export function QuotationManagement({
 
   const selected = quotations.find((quotation) => quotation.id === selectedId);
   const selectedProject = projects.find((project) => project.id === selected?.projectId);
-  const filtered = quotations.filter((quotation) => {
-    const matchesFilter = filter === "All" || quotation.status === filter;
-    const matchesQuery = `${quotation.id} ${quotation.project} ${quotation.customerDetails ?? ""} ${quotation.projectId}`
+  const filteredProjects = projects.filter((project) => {
+    const quotation = quotations.find((item) => item.projectId === project.id);
+    const matchesFilter =
+      filter === "All" ||
+      (quotation ? quotation.status === filter : filter === "Draft");
+    const matchesQuery = `${quotation?.id ?? ""} ${project.name} ${project.client} ${project.id}`
       .toLowerCase()
       .includes(query.toLowerCase());
     return matchesFilter && matchesQuery;
@@ -153,11 +158,19 @@ export function QuotationManagement({
     setView("details");
   }
 
-  function openForm(quotation?: Quotation) {
+  useEffect(() => {
+    if (!initialProjectId) return;
+    const quotation = quotations.find((item) => item.projectId === initialProjectId);
+    const project = projects.find((item) => item.id === initialProjectId);
+    if (quotation) openDetails(quotation);
+    else if (project) openForm(undefined, project);
+  }, [initialProjectId]);
+
+  function openForm(quotation?: Quotation, projectForNew?: Project) {
     if (quotation) {
       setSelectedId(quotation.id);
     } else {
-      const project = projects[0];
+      const project = projectForNew ?? projects.find((item) => !quotations.some((q) => q.projectId === item.id));
       if (!project) return;
       const draft = makeQuotation(project, quotations.length + 1);
       setQuotations((current) => [draft, ...current]);
@@ -266,10 +279,11 @@ export function QuotationManagement({
             </select>
           </div>
           <QuotationList
-            quotations={filtered}
-            projects={projects}
+            quotations={quotations}
+            visibleProjects={filteredProjects}
             onOpen={openDetails}
             onEdit={(quotation) => openForm(quotation)}
+            onCreate={(project) => openForm(undefined, project)}
           />
         </>
       )}
@@ -312,40 +326,42 @@ function QuotationStats({ quotations }: { quotations: Quotation[] }) {
 
 function QuotationList({
   quotations,
-  projects,
+  visibleProjects,
   onOpen,
   onEdit,
+  onCreate,
 }: {
   quotations: Quotation[];
-  projects: Project[];
+  visibleProjects: Project[];
   onOpen: (quotation: Quotation) => void;
   onEdit: (quotation: Quotation) => void;
+  onCreate: (project: Project) => void;
 }) {
   return (
     <div className="panel quotation-list-panel">
       <div className="quotation-list-head">
         <span>Quotation</span><span>Customer / project</span><span>Date</span><span>Amount</span><span>Status</span><span>Actions</span>
       </div>
-      {quotations.map((quotation) => {
-        const project = projects.find((item) => item.id === quotation.projectId);
+      {visibleProjects.map((project) => {
+        const quotation = quotations.find((item) => item.projectId === project.id);
         return (
-          <div className="quotation-list-row" key={quotation.id}>
-            <button className="quotation-id-link" onClick={() => onOpen(quotation)}>
+          <div className="quotation-list-row" key={project.id}>
+            <button className="quotation-id-link" onClick={() => quotation && onOpen(quotation)}>
               <FileText size={16} />
-              <span><strong>{quotation.id}</strong><small>{quotation.projectId}</small></span>
+              <span><strong>{quotation?.id ?? "No quotation"}</strong><small>{project.id}</small></span>
             </button>
-            <span><strong>{project?.client ?? quotation.customerDetails}</strong><small>{quotation.project}</small></span>
-            <span>{quotation.quotationDate}</span>
-            <strong>{usd(quotation.total ?? 0)}</strong>
-            <StatusPill status={quotation.status} />
+            <span><strong>{project.client}</strong><small>{project.name}</small></span>
+            <span>{quotation?.quotationDate ?? "Not created"}</span>
+            <strong>{quotation ? usd(quotation.total ?? 0) : "—"}</strong>
+            {quotation ? <StatusPill status={quotation.status} /> : <StatusPill status="Not created" />}
             <span className="quotation-row-actions">
-              <button className="text-button" onClick={() => onOpen(quotation)}>Open <ArrowUpRight size={13} /></button>
-              {quotation.status !== "Approved" && <button className="icon-button" onClick={() => onEdit(quotation)} aria-label={`Edit ${quotation.id}`}><ChevronDown size={15} /></button>}
+              {quotation ? <button className="text-button" onClick={() => onOpen(quotation)}>Open quotation <ArrowUpRight size={13} /></button> : <button className="text-button" onClick={() => onCreate(project)}>Create quotation <Plus size={13} /></button>}
+              {quotation && quotation.status !== "Approved" && <button className="icon-button" onClick={() => onEdit(quotation)} aria-label={`Edit ${quotation.id}`}><ChevronDown size={15} /></button>}
             </span>
           </div>
         );
       })}
-      {!quotations.length && <div className="empty-state"><FileText size={30} /><h3>No quotations found</h3><p>Adjust your search or status filter.</p></div>}
+      {!visibleProjects.length && <div className="empty-state"><FileText size={30} /><h3>No projects found</h3><p>There are no projects available for quotation management.</p></div>}
     </div>
   );
 }

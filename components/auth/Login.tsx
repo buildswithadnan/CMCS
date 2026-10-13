@@ -1,7 +1,7 @@
 "use client";
 
-import React, { FormEvent, useState } from "react";
-import { ArrowUpRight, Building2, ShieldCheck } from "lucide-react";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
+import { ArrowUpRight, Building2, Check, ChevronDown, ShieldCheck } from "lucide-react";
 import { User } from "../../lib/types";
 import { loginDepartments, users } from "../../lib/dummy-data/mock-data";
 
@@ -10,7 +10,19 @@ export function Login({ onLogin }: { onLogin: (u: User) => void }) {
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
+  const [departmentOpen, setDepartmentOpen] = useState(false);
   const [error, setError] = useState("");
+  const departmentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const closeDepartmentMenu = (event: MouseEvent) => {
+      if (!departmentRef.current?.contains(event.target as Node)) {
+        setDepartmentOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", closeDepartmentMenu);
+    return () => document.removeEventListener("mousedown", closeDepartmentMenu);
+  }, []);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -63,26 +75,35 @@ export function Login({ onLogin }: { onLogin: (u: User) => void }) {
           <form className="auth-form" onSubmit={submit}>
             <label>
               Department
-              <div className="department-field">
+              <div className={`department-field ${departmentOpen ? "is-open" : ""}`} ref={departmentRef}>
                 <Building2 size={16} aria-hidden="true" />
-                <select
-                  required
-                  value={department}
-                  onChange={(e) => {
-                    setDepartment(e.target.value);
-                    setError("");
-                  }}
-                  aria-label="Select your department"
+                <button
+                  type="button"
+                  className={`department-trigger ${department ? "has-value" : ""}`}
+                  aria-haspopup="listbox"
+                  aria-expanded={departmentOpen}
+                  onClick={() => setDepartmentOpen((open) => !open)}
                 >
-                  <option value="" disabled>
-                    Select your department
-                  </option>
-                  {loginDepartments.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
+                  {department || "Select your department"}
+                </button>
+                <ChevronDown className="department-chevron" size={15} aria-hidden="true" />
+                {departmentOpen && <div className="department-menu" role="listbox" aria-label="Select your department">
+                  {loginDepartments.map((item) => <button
+                    type="button"
+                    className={`department-option ${department === item ? "is-selected" : ""}`}
+                    role="option"
+                    aria-selected={department === item}
+                    key={item}
+                    onClick={() => {
+                      setDepartment(item);
+                      setDepartmentOpen(false);
+                      setError("");
+                    }}
+                  >
+                    <span>{item}</span>
+                    {department === item && <Check size={14} />}
+                  </button>)}
+                </div>}
               </div>
               <span className="auth-field-help">
                 Use the workspace assigned to your department.

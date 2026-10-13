@@ -2,23 +2,29 @@
 
 import React from "react";
 import { X } from "lucide-react";
-import { Approval, Project } from "../../lib/types";
+import { Approval, Project, Quotation } from "../../lib/types";
 import { formatDate, money, parseDate } from "../../lib/dummy-data/mock-data";
 import { CeoApproval } from "../ceo/CeoApproval";
 
 export function ProjectDetailModal({
   selected,
   isCeo,
+  isFinance,
+  quotation,
   approval,
   onClose,
   onEdit,
+  onQuotationAction,
   onApprovalSubmit,
 }: {
   selected: Project;
   isCeo: boolean;
+  isFinance?: boolean;
+  quotation?: Quotation;
   approval?: { status: Approval; comment: string };
   onClose: () => void;
   onEdit: () => void;
+  onQuotationAction?: () => void;
   onApprovalSubmit: (project: Project, status: Approval, comment: string) => void;
 }) {
   const pStart = parseDate(selected.start);
@@ -120,14 +126,21 @@ export function ProjectDetailModal({
             >
               Close
             </button>
-            {!isCeo && (
+            {isFinance ? (
+              <button
+                className="button button-primary"
+                onClick={onQuotationAction}
+              >
+                {quotation ? "Open quotation" : "Create quotation"}
+              </button>
+            ) : !isCeo ? (
               <button
                 className="button button-primary"
                 onClick={onEdit}
               >
                 Edit project
               </button>
-            )}
+            ) : null}
           </div>
         )}
       </div>

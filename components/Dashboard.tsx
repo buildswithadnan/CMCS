@@ -14,9 +14,20 @@ import {
   LogOut,
   Menu,
   Search,
+  ReceiptText,
   ShieldCheck,
   Users,
   Wallet,
+  UserRound,
+  HardDrive,
+  ListTodo,
+  CalendarClock,
+  ClipboardCheck,
+  UserCheck,
+  BellRing,
+  UserCircle,
+  Package,
+  Settings2,
   X,
 } from "lucide-react";
 import {
@@ -45,8 +56,11 @@ import { CeoDashboardHome } from "./dashboard/CeoDashboardHome";
 import { CeoApprovals } from "./ceo/CeoApprovals";
 import { QuotationsPage } from "./finance/QuotationsPage";
 import { FinancePage } from "./finance/FinancePage";
+import { ExpensesPage } from "./finance/ExpensesPage";
 import { EmployeesPage } from "./employees/EmployeesPage";
 import { ModulePage } from "./modules/ModulePage";
+import { TechnicalEmployeePage } from "./technical/TechnicalEmployeePage";
+import { AdministrationEmployeePage } from "./employees/AdministrationEmployeePage";
 
 const nav = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -55,6 +69,7 @@ const nav = [
   { label: "Assignments", icon: Users },
   { label: "People & attendance", icon: CalendarDays },
   { label: "Finance", icon: Wallet },
+  { label: "Expenses", icon: ReceiptText },
   { label: "Documents", icon: FileText },
   { label: "Reports", icon: BarChart3 },
 ];
@@ -68,7 +83,43 @@ const ceoNav = [
   { label: "Notifications", icon: Bell },
   { label: "Employees", icon: CalendarDays },
   { label: "Finance", icon: Wallet },
+  { label: "Expenses", icon: ReceiptText },
   { label: "Reports", icon: BarChart3 },
+];
+
+const technicalNav = [
+  { label: "Dashboard", icon: LayoutDashboard },
+  { label: "My Projects", icon: ClipboardList },
+  { label: "My Tasks", icon: ListTodo },
+  { label: "My Schedule", icon: CalendarClock },
+  { label: "Equipment & Resources", icon: HardDrive },
+  { label: "Attendance", icon: UserCheck },
+  { label: "Leave Requests", icon: ClipboardCheck },
+  { label: "Notifications", icon: BellRing },
+  { label: "My Profile", icon: UserCircle },
+];
+
+const administratorNav = [
+  { label: "Dashboard", icon: LayoutDashboard },
+  { label: "Projects", icon: ClipboardList },
+  { label: "Project Calendar", icon: GanttChartSquare },
+  { label: "Employees", icon: Users },
+  { label: "Finance", icon: Wallet },
+  { label: "Documents", icon: FileText },
+  { label: "Reports", icon: BarChart3 },
+  { label: "Settings", icon: ClipboardCheck },
+];
+
+const administrationEmployeeNav = [
+  { label: "Dashboard", icon: LayoutDashboard },
+  { label: "Administrative Tasks", icon: ClipboardList },
+  { label: "Documents & Records", icon: FileText },
+  { label: "Assets & Inventory", icon: Package },
+  { label: "Office Maintenance", icon: Settings2 },
+  { label: "Meetings & Schedule", icon: CalendarDays },
+  { label: "Requests", icon: ClipboardCheck },
+  { label: "Notifications", icon: BellRing },
+  { label: "My Profile", icon: UserCircle },
 ];
 
 export function Dashboard({
@@ -86,12 +137,16 @@ export function Dashboard({
   const isCeo = role === "ceo";
   const isHoo = role === "hoo";
   const isFinance = role === "finance";
+  const isTechnical = role === "technical";
+  const isAdministrator = role === "admin";
+  const isAdministrationEmployee = role === "administrationEmployee";
   const [active, setActive] = useState("Dashboard");
   const [projects, setProjects] = useState<Project[]>(projectsSeed);
   const [customFilter, setCustomFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [dialog, setDialog] = useState<"new" | Project | null>(null);
   const [selected, setSelected] = useState<Project | null>(null);
+  const [financeProjectId, setFinanceProjectId] = useState<string | null>(null);
   const [approvals, setApprovals] = useState<
     Record<string, { status: Approval; comment: string }>
   >({});
@@ -220,7 +275,17 @@ export function Dashboard({
       notification.recipient === "all" || notification.recipient === role,
   );
 
-  const visibleNav = isCeo ? ceoNav : nav;
+  const visibleNav = isTechnical
+    ? technicalNav
+    : isAdministrationEmployee
+      ? administrationEmployeeNav
+    : isAdministrator
+      ? administratorNav
+    : isCeo
+    ? ceoNav
+    : isFinance || isHoo
+      ? nav
+      : nav.filter((item) => item.label !== "Expenses");
 
   return (
     <div className={"app-shell is-visible " + (isHoo ? "heo-shell" : "")}>
@@ -328,7 +393,16 @@ export function Dashboard({
         </header>
         <div className="page-content">
           {active === "Dashboard" &&
-            (isCeo ? (
+            (isTechnical ? (
+              <TechnicalEmployeePage
+                active={active}
+                user={user}
+                projects={projects}
+                onNotify={notify}
+              />
+            ) : isAdministrationEmployee ? (
+              <AdministrationEmployeePage active={active} user={user} onNotify={notify} />
+            ) : isCeo ? (
               <CeoDashboardHome
                 projects={projects}
                 notifications={visibleNotifications}
@@ -340,6 +414,7 @@ export function Dashboard({
                 projects={projects}
                 onNotify={notify}
                 onQuotationSubmitted={notifyQuotationSubmission}
+                initialProjectId={financeProjectId}
               />
             ) : (
               <DashboardHome
@@ -371,7 +446,22 @@ export function Dashboard({
               projects={projects}
               onNotify={notify}
               onQuotationSubmitted={notifyQuotationSubmission}
+              initialProjectId={financeProjectId}
             />
+          )}
+          {active === "Expenses" && (
+            <ExpensesPage projects={projects} role={role} onNotify={notify} />
+          )}
+          {isTechnical && active !== "Dashboard" && (
+            <TechnicalEmployeePage
+              active={active}
+              user={user}
+              projects={projects}
+              onNotify={notify}
+            />
+          )}
+          {isAdministrationEmployee && active !== "Dashboard" && (
+            <AdministrationEmployeePage active={active} user={user} onNotify={notify} />
           )}
           {active === "Notifications" && (
             <section className="page-section">
@@ -475,7 +565,7 @@ export function Dashboard({
             </section>
           )}
           {(active === "Employees" || active === "People & attendance") && (
-            <EmployeesPage projects={projects} />
+            <EmployeesPage projects={projects} isAdministrator={isAdministrator} />
           )}
           {[
             "Assignments",
@@ -487,7 +577,7 @@ export function Dashboard({
           )}
         </div>
       </main>
-      {(dialog === "new" || dialog) && !isCeo && !isFinance && (
+      {(dialog === "new" || dialog) && !isCeo && !isFinance && !isTechnical && (
         <ProjectDialog
           project={dialog === "new" ? undefined : dialog}
           onClose={() => setDialog(null)}
@@ -507,6 +597,21 @@ export function Dashboard({
             setSelected(null);
             setDialog(selected);
           }}
+          isFinance={isFinance}
+          quotation={
+            isFinance
+              ? quotationSeed.find((quotation) => quotation.projectId === selected.id)
+              : undefined
+          }
+          onQuotationAction={
+            isFinance
+              ? () => {
+                  setSelected(null);
+                  setFinanceProjectId(selected.id);
+                  setActive("Finance");
+                }
+              : undefined
+          }
           onApprovalSubmit={updateApproval}
         />
       )}

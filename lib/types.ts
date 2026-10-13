@@ -16,6 +16,7 @@ export type Role =
   | "finance"
   | "hr"
   | "admin"
+  | "administrationEmployee"
   | "employee";
 
 export type Status = "In Progress" | "Upcoming" | "Completed" | "Rejected";
@@ -32,6 +33,30 @@ export type Project = {
   department: string;
   budget: number;
   assignedEmployees?: string[];
+};
+
+export type TaskStatus = "Pending" | "In Progress" | "Completed";
+
+export type EmployeeTask = {
+  id: string;
+  projectId: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  status: TaskStatus;
+  progress: number;
+  priority: "Low" | "Medium" | "High";
+  assignedTo: string;
+};
+
+export type EquipmentAssignment = {
+  id: string;
+  name: string;
+  category: string;
+  projectId: string;
+  assignedTo: string;
+  condition: "Good" | "Needs service";
+  returnDate: string;
 };
 
 export type Approval = "Pending approval" | "Approved" | "Rejected";
@@ -92,6 +117,48 @@ export type QuotationHistory = {
   date: string;
   actor: string;
   note?: string;
+};
+
+export type ExpenseStatus =
+  | "Draft"
+  | "Pending Approval"
+  | "Approved"
+  | "Rejected"
+  | "Paid";
+
+export type ExpenseCategory =
+  | "Travel"
+  | "Transportation"
+  | "Equipment Rental"
+  | "Production"
+  | "Technical"
+  | "Food & Accommodation"
+  | "Office Supplies"
+  | "Staff"
+  | "Other";
+
+export type ExpenseHistory = {
+  status: ExpenseStatus;
+  date: string;
+  actor: string;
+  note?: string;
+};
+
+export type Expense = {
+  id: string;
+  projectId: string;
+  project: string;
+  title: string;
+  category: ExpenseCategory;
+  description: string;
+  amount: number;
+  expenseDate: string;
+  vendor: string;
+  paymentMethod: string;
+  receiptName?: string;
+  status: ExpenseStatus;
+  submittedBy: string;
+  history: ExpenseHistory[];
 };
 
 export type Invoice = {

@@ -23,6 +23,8 @@ export { CeoApprovals } from "./ceo/CeoApprovals";
 export { QuotationCard } from "./finance/QuotationCard";
 export { QuotationsPage } from "./finance/QuotationsPage";
 export { FinancePage } from "./finance/FinancePage";
+export { ExpensesPage } from "./finance/ExpensesPage";
+export { TechnicalEmployeePage } from "./technical/TechnicalEmployeePage";
 export { EmployeesPage } from "./employees/EmployeesPage";
 export { ModulePage } from "./modules/ModulePage";
 export { Dashboard } from "./Dashboard";
