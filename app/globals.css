@@ -14285,3 +14285,149 @@ button {
 .administration-workspace .admin-task-toolbar{display:flex;gap:10px;margin-bottom:16px}.administration-workspace .admin-task-toolbar label{display:flex;align-items:center;gap:9px;flex:1;max-width:520px;padding:0 12px;border:1px solid #e4eaf3;border-radius:10px;background:#fff;color:#71809b}.administration-workspace .admin-task-toolbar input,.administration-workspace .admin-task-toolbar select,.administration-workspace .admin-task-actions select{border:0;background:transparent;color:#17243d;font:inherit;outline:0}.administration-workspace .admin-task-toolbar input{width:100%;padding:11px 0}.administration-workspace .admin-task-toolbar>select{padding:0 12px;border:1px solid #e4eaf3;border-radius:10px}.administration-workspace .admin-full-task{display:flex;align-items:center;gap:12px;border-bottom:1px solid #e4eaf3}.administration-workspace .admin-full-task:last-child{border-bottom:0}.administration-workspace .admin-full-task .admin-task-row{border:0}.administration-workspace .admin-task-actions{display:flex;align-items:center;gap:7px}.administration-workspace .admin-task-actions select{padding:7px;border:1px solid #e4eaf3;border-radius:8px;font-size:11px}
 .administration-workspace .admin-dialog-backdrop{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(17,28,52,.48)}.administration-workspace .admin-task-dialog,.administration-workspace .admin-confirm-dialog{width:min(100%,540px)}.administration-workspace .admin-task-dialog label{display:block;margin-top:16px;color:#17243d;font-size:12px;font-weight:700}.administration-workspace .admin-task-dialog input,.administration-workspace .admin-task-dialog select{display:block;width:100%;margin-top:7px;padding:10px 12px;color:#17243d;border:1px solid #e4eaf3;border-radius:9px;background:#fff;font:inherit}.administration-workspace .admin-task-dialog p,.administration-workspace .admin-confirm-dialog p{color:#71809b;font-size:13px;line-height:1.5}.administration-workspace .admin-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px;padding-top:18px;border-top:1px solid #e4eaf3}.administration-workspace .admin-detail-grid small{display:block;color:#71809b;font-size:11px;text-transform:uppercase}.administration-workspace .admin-detail-grid strong{display:block;margin-top:5px;font-size:13px}.administration-workspace .admin-dialog-actions{display:flex;justify-content:flex-end;align-items:center;gap:9px;margin-top:22px}.administration-workspace .button-danger{color:#fff;background:#c94d45;border-color:#c94d45}.administration-workspace .admin-simple-list>div{display:flex;align-items:center;gap:12px;padding:17px 0;border-bottom:1px solid #e4eaf3}.administration-workspace .admin-simple-list>div:last-child{border-bottom:0}.administration-workspace .admin-simple-list>div>span{display:grid;place-items:center;width:34px;height:34px;color:#2563eb;background:#edf4ff;border-radius:10px}.administration-workspace .admin-simple-list strong{flex:1;font-size:13px}
 @media (max-width:760px){.administration-workspace .admin-dashboard-grid,.administration-workspace .admin-dashboard-grid-bottom{grid-template-columns:1fr}.administration-workspace .admin-task-toolbar{flex-direction:column}.administration-workspace .admin-task-toolbar label{max-width:none}.administration-workspace .admin-full-task{align-items:flex-start;flex-direction:column}.administration-workspace .admin-full-task .admin-task-row{padding-bottom:4px}.administration-workspace .admin-task-actions{width:100%;padding-bottom:12px}.administration-workspace .admin-task-actions select{flex:1}.administration-workspace .admin-detail-grid{grid-template-columns:1fr}}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Finance Department Dashboard
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Header actions */
+.finance-dashboard .page-heading{flex-wrap:wrap;gap:14px}
+.finance-dash-header-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* Summary cards grid */
+.finance-summary-grid{grid-template-columns:repeat(4,1fr)}
+.finance-summary-card strong{font-size:22px}
+.finance-summary-card.indigo>div svg{color:#2563eb}
+.finance-summary-card.amber>div svg{color:#f59e0b}
+.finance-summary-card.green>div svg{color:#16a34a}
+.finance-summary-card>div svg{color:#6657d8}
+
+/* Charts row */
+.finance-dash-charts{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.finance-chart-card.wide{grid-column:1}
+.finance-chart-card .panel-heading{margin-bottom:12px}
+.finance-chart-card .panel-heading h2{margin:4px 0 0;font-size:15px}
+.finance-chart-card .panel-heading p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.finance-chart-legend{display:flex;gap:16px;margin-top:10px}
+.finance-chart-legend span{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+.finance-chart-legend i{display:inline-block;width:10px;height:10px;border-radius:3px}
+.finance-donut-legend{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.finance-donut-legend>div{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink)}
+.finance-donut-legend>div strong{margin-left:auto;font-size:14px}
+.finance-legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%}
+
+/* Mid sections grid */
+.finance-dash-mid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.finance-dash-panel .panel-heading{margin-bottom:14px}
+.finance-dash-panel .panel-heading h2{margin:4px 0 0;font-size:15px}
+
+/* Mini stat row inside panels */
+.finance-dash-stat-row{display:flex;gap:0;margin-bottom:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.finance-mini-stat{flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--line)}
+.finance-mini-stat:last-child{border-right:0}
+.finance-mini-stat strong{display:block;color:var(--ink);font-size:15px;font-weight:700}
+.finance-mini-stat span{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+
+/* Generic list rows inside panels */
+.finance-list{display:flex;flex-direction:column;gap:0}
+.finance-list-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+.finance-list-row:last-child{border-bottom:0}
+.finance-list-icon{color:var(--muted);flex:0 0 auto}
+.finance-list-main{flex:1;min-width:0}
+.finance-list-main strong{display:block;color:var(--ink);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-list-main small{display:block;color:var(--muted);font-size:11px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-list-amount{font-weight:700;font-size:12px;white-space:nowrap;color:var(--ink)}
+
+/* Payment progress rows */
+.finance-payment-row{flex-wrap:wrap;gap:8px}
+.finance-payment-progress-wrap{display:flex;align-items:center;gap:7px;flex:1;min-width:80px}
+.finance-payment-progress-bar{flex:1;height:5px;background:#edf1f6;border-radius:99px;overflow:hidden}
+.finance-payment-progress-bar span{display:block;height:100%;border-radius:99px;transition:width .3s}
+.finance-payment-progress-wrap small{color:var(--muted);font-size:10px;white-space:nowrap}
+
+/* Payment tracking pills */
+.finance-payment-track-stats{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.finance-payment-track-pill{flex:1;min-width:60px;padding:9px 8px;border:1.5px solid;border-radius:11px;text-align:center}
+.finance-payment-track-pill strong{display:block;font-size:16px;font-weight:700}
+.finance-payment-track-pill span{display:block;font-size:10px;margin-top:2px;opacity:.85}
+
+/* Expense mini bar */
+.finance-expense-bar-mini{width:50px;height:5px;background:#edf1f6;border-radius:99px;overflow:hidden;flex-shrink:0}
+.finance-expense-bar-mini span{display:block;height:100%;border-radius:99px}
+
+/* Panel action button */
+.finance-dash-action-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:14px;padding:9px;color:#2563eb;border:1.5px dashed #c8d9f5;border-radius:10px;font-size:12px;font-weight:700;transition:background .15s,border-color .15s}
+.finance-dash-action-btn:hover{background:#eef4ff;border-color:#93bdf9}
+
+/* Bottom layout */
+.finance-dash-bottom{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:20px}
+
+/* Transactions panel */
+.finance-transactions-panel .panel-heading{margin-bottom:14px}
+.finance-txn-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.finance-txn-toolbar .inline-search{flex:1;min-width:160px}
+.finance-txn-toolbar select{padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:13px;color:var(--ink);background:#fff;cursor:pointer}
+.finance-txn-head,.finance-txn-row{display:grid;grid-template-columns:120px 90px 1fr 100px 100px 130px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+.finance-txn-head{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.finance-txn-row:last-child{border-bottom:0}
+.finance-txn-id{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--ink)}
+.finance-txn-id svg{color:var(--muted);flex-shrink:0}
+.finance-txn-project{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.finance-txn-date{color:var(--muted)}
+.finance-txn-amount{font-size:13px}
+.finance-txn-type{padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.finance-txn-type-invoice{color:#2563eb;background:#eef4ff}
+.finance-txn-type-payment{color:#16a34a;background:#edfaf3}
+.finance-txn-type-quotation{color:#6657d8;background:#f0eeff}
+.finance-txn-type-expense{color:#f59e0b;background:#fff8e6}
+
+/* Quick actions sidebar */
+.finance-quick-actions-panel .panel-heading{margin-bottom:14px}
+.finance-quick-actions-panel .panel-heading h2{margin:4px 0 0;font-size:15px}
+.finance-quick-action-list{display:flex;flex-direction:column;gap:4px;margin-bottom:18px}
+.finance-quick-action-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px;text-align:left;border:1px solid transparent;border-radius:11px;transition:background .15s,border-color .15s}
+.finance-quick-action-item:hover{background:#f6f8fb;border-color:var(--line)}
+.finance-quick-action-item>div{flex:1}
+.finance-quick-action-item strong{display:block;font-size:13px;color:var(--ink)}
+.finance-quick-action-item small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.finance-quick-action-item>svg:last-child{color:var(--muted);flex-shrink:0}
+.finance-qa-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;flex-shrink:0}
+.qa-quotation{color:#6657d8;background:#f0eeff}
+.qa-invoice{color:#2563eb;background:#eef4ff}
+.qa-payment{color:#16a34a;background:#edfaf3}
+.qa-expense{color:#f59e0b;background:#fff8e6}
+
+/* Pending alerts */
+.finance-alert-section{border-top:1px solid var(--line);padding-top:14px}
+.finance-alert-item{display:flex;align-items:flex-start;gap:9px;padding:10px 0;border-bottom:1px solid var(--line)}
+.finance-alert-item:last-child{border-bottom:0}
+.finance-alert-item svg{color:#f59e0b;flex-shrink:0;margin-top:1px}
+.finance-alert-item strong{display:block;font-size:12px;color:var(--ink)}
+.finance-alert-item small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+
+/* Quick action dialog */
+.finance-quick-dialog{width:min(100%,500px)}
+
+/* Responsive */
+@media (max-width:1200px){
+  .finance-dash-charts{grid-template-columns:1fr 1fr}
+  .finance-chart-card.wide{grid-column:1/-1}
+  .finance-summary-grid{grid-template-columns:repeat(2,1fr)}
+  .finance-dash-mid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  .finance-dash-bottom{grid-template-columns:1fr}
+  .finance-txn-head,.finance-txn-row{grid-template-columns:100px 80px 1fr 80px 90px}
+  .finance-txn-row>span:nth-child(6){display:none}
+  .finance-txn-head>span:nth-child(6){display:none}
+}
+@media (max-width:680px){
+  .finance-dash-charts{grid-template-columns:1fr}
+  .finance-summary-grid{grid-template-columns:1fr 1fr}
+  .finance-dash-mid{grid-template-columns:1fr}
+  .finance-dash-header-actions{width:100%}
+  .finance-txn-head,.finance-txn-row{grid-template-columns:100px 1fr 80px 80px}
+  .finance-txn-row>span:nth-child(2),.finance-txn-head>span:nth-child(2){display:none}
+  .finance-txn-row>span:nth-child(4),.finance-txn-head>span:nth-child(4){display:none}
+}

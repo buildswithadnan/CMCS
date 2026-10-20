@@ -62,6 +62,7 @@ import { ModulePage } from "./modules/ModulePage";
 import { TechnicalEmployeePage } from "./technical/TechnicalEmployeePage";
 import { AdministrationEmployeePage } from "./employees/AdministrationEmployeePage";
 import { OperationsTasksPage } from "./operations/OperationsTasksPage";
+import { FinanceDashboard } from "./finance/FinanceDashboard";
 
 const nav = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -100,6 +101,16 @@ const technicalNav = [
   { label: "Leave Requests", icon: ClipboardCheck },
   { label: "Notifications", icon: BellRing },
   { label: "My Profile", icon: UserCircle },
+];
+
+const financeNav = [
+  { label: "Dashboard", icon: LayoutDashboard },
+  { label: "Finance", icon: Wallet },
+  { label: "Expenses", icon: ReceiptText },
+  { label: "Projects", icon: ClipboardList },
+  { label: "Project Calendar", icon: GanttChartSquare },
+  { label: "Documents", icon: FileText },
+  { label: "Reports", icon: BarChart3 },
 ];
 
 const administratorNav = [
@@ -151,6 +162,7 @@ export function Dashboard({
   const [dialog, setDialog] = useState<"new" | Project | null>(null);
   const [selected, setSelected] = useState<Project | null>(null);
   const [financeProjectId, setFinanceProjectId] = useState<string | null>(null);
+  const [financeInitialView, setFinanceInitialView] = useState<"invoices" | "quotations" | "expenses" | "payments">("invoices");
   const [approvals, setApprovals] = useState<
     Record<string, { status: Approval; comment: string }>
   >({});
@@ -313,9 +325,9 @@ export function Dashboard({
     ? ceoNav
     : isHoo
       ? operationsNav
-    : isFinance || isHoo
-      ? nav
-      : nav.filter((item) => item.label !== "Expenses");
+    : isFinance
+      ? financeNav
+    : nav.filter((item) => item.label !== "Expenses");
 
   return (
     <div className={"app-shell is-visible " + (isHoo ? "heo-shell" : "")}>
@@ -434,15 +446,17 @@ export function Dashboard({
                 onSelect={setSelected}
               />
             ) : isFinance ? (
-              <FinancePage
+              <FinanceDashboard
                 projects={projects}
                 onNotify={notify}
-                onQuotationSubmitted={notifyQuotationSubmission}
-                onInvoiceSubmitted={notifyInvoiceSubmission}
-                onInvoiceRevisionRequested={notifyInvoiceRevision}
-                initialProjectId={financeProjectId}
-                canSubmit={isFinance}
-                role={role}
+                onNavigate={(section, view) => {
+                  if (view === "quotations" || view === "invoices" || view === "expenses") {
+                    setFinanceInitialView(view);
+                  } else if (view === "payments") {
+                    setFinanceInitialView("invoices");
+                  }
+                  setActive(section);
+                }}
               />
             ) : (
               <DashboardHome
@@ -471,7 +485,7 @@ export function Dashboard({
               onInvoiceSubmitted={notifyInvoiceSubmission}
               onInvoiceRevisionRequested={notifyInvoiceRevision}
               initialProjectId={financeProjectId}
-              initialView={isCeo ? "quotations" : "invoices"}
+              initialView={isCeo ? "quotations" : financeInitialView === "quotations" ? "quotations" : financeInitialView === "expenses" ? "expenses" : "invoices"}
               canReviewInvoices={isCeo}
               canSubmit={isFinance}
               reviewOnlyQuotations={isCeo}

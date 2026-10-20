@@ -24,6 +24,7 @@ export { QuotationCard } from "./finance/QuotationCard";
 export { QuotationsPage } from "./finance/QuotationsPage";
 export { InvoicePage } from "./finance/InvoicePage";
 export { FinancePage } from "./finance/FinancePage";
+export { FinanceDashboard } from "./finance/FinanceDashboard";
 export { ExpensesPage } from "./finance/ExpensesPage";
 export { TechnicalEmployeePage } from "./technical/TechnicalEmployeePage";
 export { EmployeesPage } from "./employees/EmployeesPage";
