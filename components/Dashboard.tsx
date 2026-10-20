@@ -72,16 +72,18 @@ const nav = [
   { label: "Projects", icon: ClipboardList },
   { label: "Project Calendar", icon: GanttChartSquare },
   { label: "Assignments", icon: Users },
-  { label: "People & attendance", icon: CalendarDays },
+  { label: "Employees", icon: CalendarDays },
   { label: "Finance", icon: Wallet },
   { label: "Expenses", icon: ReceiptText },
   { label: "Documents", icon: FileText },
   { label: "Reports", icon: BarChart3 },
 ];
 
-const operationsNav = nav.map((item) =>
-  item.label === "Assignments" ? { ...item, label: "Tasks", icon: ListTodo } : item,
-);
+const operationsNav = nav
+  .filter((item) => item.label !== "Expenses")
+  .map((item) =>
+    item.label === "Assignments" ? { ...item, label: "Tasks", icon: ListTodo } : item,
+  );
 
 const ceoNav = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -654,7 +656,7 @@ export function Dashboard({
           {active === "Tasks" && isHoo && (
             <OperationsTasksPage projects={projects} onNotify={notify} />
           )}
-          {((active === "Employees" && !isAdministrationEmployee) || active === "People & attendance") && (
+          {(active === "Employees" && !isAdministrationEmployee) && (
             <EmployeesPage projects={projects} isAdministrator={isAdministrator} />
           )}
           {[

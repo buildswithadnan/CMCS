@@ -64,28 +64,31 @@ export function DashboardHome({
         <StatCard
           label="Total projects"
           value={String(metrics.total)}
+          sub="All active & completed"
           icon={ClipboardList}
         />
         <StatCard
           label="In progress"
           value={String(metrics.active)}
+          sub="Currently running"
           icon={Activity}
           tone="indigo"
         />
         <StatCard
           label="Upcoming"
           value={String(metrics.upcoming)}
+          sub="Scheduled to start"
           icon={Clock3}
           tone="purple"
         />
         <StatCard
           label="Completed"
           value={String(metrics.completed)}
+          sub="Successfully delivered"
           icon={CheckCircle2}
           tone="green"
         />
-      </section>
-      {showExecutiveInsights && <ProjectGraphs projects={projects} />}
+      </section>      {showExecutiveInsights && <ProjectGraphs projects={projects} />}
       {showExecutiveInsights && <section className="dashboard-grid">
         <article className="panel chart-panel wide">
           <div className="panel-heading">

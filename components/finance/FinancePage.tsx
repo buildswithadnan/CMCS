@@ -32,7 +32,7 @@ export function FinancePage({
   role?: Role;
 }) {
   const [view, setView] = useState<"invoices" | "quotations" | "expenses">(initialView);
-  const showExpenses = role === "ceo";
+  const showExpenses = role === "ceo" || role === "hoo";
 
   return (
     <section className="page-section finance-workspace">
@@ -65,7 +65,7 @@ export function FinancePage({
         )}
       </div>
       {view === "expenses" && showExpenses ? (
-        <ExpensesPage projects={projects} role="ceo" onNotify={onNotify} />
+        <ExpensesPage projects={projects} role={role ?? "ceo"} onNotify={onNotify} />
       ) : view === "quotations" ? (
         <QuotationManagement
           projects={projects}

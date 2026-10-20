@@ -4,11 +4,13 @@ import { Activity } from "lucide-react";
 export function StatCard({
   label,
   value,
+  sub,
   icon: Icon,
   tone = "blue",
 }: {
   label: string;
   value: string;
+  sub?: string;
   icon: typeof Activity;
   tone?: string;
 }) {
@@ -19,7 +21,7 @@ export function StatCard({
         <Icon size={18} />
       </div>
       <strong>{value}</strong>
-      <small>Mock workspace data</small>
+      <small>{sub ?? "Current workspace data"}</small>
     </article>
   );
 }
