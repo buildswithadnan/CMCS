@@ -56,6 +56,9 @@ import { DashboardHome } from "./dashboard/DashboardHome";
 import { CeoDashboardHome } from "./dashboard/CeoDashboardHome";
 import { CeoApprovals } from "./ceo/CeoApprovals";
 import { FinancePage } from "./finance/FinancePage";
+import { InvoicePage } from "./finance/InvoicePage";
+import { QuotationManagement } from "./finance/QuotationManagement";
+import { PaymentsPage } from "./finance/PaymentsPage";
 import { ExpensesPage } from "./finance/ExpensesPage";
 import { EmployeesPage } from "./employees/EmployeesPage";
 import { ModulePage } from "./modules/ModulePage";
@@ -105,8 +108,10 @@ const technicalNav = [
 
 const financeNav = [
   { label: "Dashboard", icon: LayoutDashboard },
-  { label: "Finance", icon: Wallet },
-  { label: "Expenses", icon: ReceiptText },
+  { label: "Quotations", icon: FileText },
+  { label: "Invoices", icon: ReceiptText },
+  { label: "Payments", icon: Wallet },
+  { label: "Expenses", icon: ClipboardCheck },
   { label: "Projects", icon: ClipboardList },
   { label: "Project Calendar", icon: GanttChartSquare },
   { label: "Documents", icon: FileText },
@@ -450,12 +455,18 @@ export function Dashboard({
                 projects={projects}
                 onNotify={notify}
                 onNavigate={(section, view) => {
-                  if (view === "quotations" || view === "invoices" || view === "expenses") {
-                    setFinanceInitialView(view);
+                  // Map view-based navigation to the new individual sidebar sections
+                  if (view === "quotations") {
+                    setActive("Quotations");
+                  } else if (view === "invoices") {
+                    setActive("Invoices");
                   } else if (view === "payments") {
-                    setFinanceInitialView("invoices");
+                    setActive("Payments");
+                  } else if (view === "expenses") {
+                    setActive("Expenses");
+                  } else {
+                    setActive(section);
                   }
-                  setActive(section);
                 }}
               />
             ) : (
@@ -477,6 +488,34 @@ export function Dashboard({
               onSelect={setSelected}
             />
           )}
+          {/* ── Finance role: individual section routes ── */}
+          {active === "Quotations" && (
+            <QuotationManagement
+              projects={projects}
+              onNotify={notify}
+              onQuotationSubmitted={notifyQuotationSubmission}
+              initialProjectId={financeProjectId}
+              reviewChangesLabel={false}
+              reviewOnly={false}
+            />
+          )}
+          {active === "Invoices" && (
+            <InvoicePage
+              projects={projects}
+              canReview={false}
+              canSubmit={isFinance}
+              initialSection="invoices"
+              onSubmitted={notifyInvoiceSubmission}
+              onRevisionRequested={notifyInvoiceRevision}
+            />
+          )}
+          {active === "Payments" && (
+            <PaymentsPage
+              projects={projects}
+              canManage={isFinance}
+            />
+          )}
+          {/* ── CEO/other roles: combined Finance tab ── */}
           {active === "Finance" && (
             <FinancePage
               projects={projects}
@@ -523,9 +562,9 @@ export function Dashboard({
                     onClick={() =>
                       setActive(
                         notification.kind === "Quotation"
-                          ? "Finance"
+                          ? (isFinance ? "Quotations" : "Finance")
                           : notification.kind === "Invoice"
-                            ? "Finance"
+                            ? (isFinance ? "Invoices" : "Finance")
                           : notification.kind === "Project approval"
                             ? "Project Approvals"
                             : "Projects",
@@ -659,7 +698,7 @@ export function Dashboard({
               ? () => {
                   setSelected(null);
                   setFinanceProjectId(selected.id);
-                  setActive("Finance");
+                  setActive("Quotations");
                 }
               : undefined
           }

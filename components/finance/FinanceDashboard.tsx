@@ -385,7 +385,7 @@ export function FinanceDashboard({
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#edf1f6" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={(v) => `$${v / 1000}k`} tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(value: number) => usd(value)} />
+              <Tooltip formatter={(v: unknown) => typeof v === "number" ? usd(v) : String(v)} />
               <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#2563eb" fill="url(#gradRev)" strokeWidth={2} />
               <Area type="monotone" dataKey="expenses" name="Expenses" stroke="#f59e0b" fill="url(#gradExp)" strokeWidth={2} />
             </AreaChart>
@@ -449,7 +449,7 @@ export function FinanceDashboard({
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#edf1f6" />
               <XAxis type="number" tickFormatter={(v) => `$${v / 1000}k`} tick={{ fontSize: 11 }} />
               <YAxis type="category" dataKey="category" width={108} tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(value: number) => usd(value)} />
+              <Tooltip formatter={(v: unknown) => typeof v === "number" ? usd(v) : String(v)} />
               <Bar dataKey="amount" name="Amount" fill="#6657d8" radius={[0, 3, 3, 0]} />
             </BarChart>
           </ResponsiveContainer>
