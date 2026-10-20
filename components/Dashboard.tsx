@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import {
   Approval,
+  Invoice,
   Notification,
   Project,
   Quotation,
@@ -54,13 +55,13 @@ import { ProjectCalendar } from "./calendar/ProjectCalendar";
 import { DashboardHome } from "./dashboard/DashboardHome";
 import { CeoDashboardHome } from "./dashboard/CeoDashboardHome";
 import { CeoApprovals } from "./ceo/CeoApprovals";
-import { QuotationsPage } from "./finance/QuotationsPage";
 import { FinancePage } from "./finance/FinancePage";
 import { ExpensesPage } from "./finance/ExpensesPage";
 import { EmployeesPage } from "./employees/EmployeesPage";
 import { ModulePage } from "./modules/ModulePage";
 import { TechnicalEmployeePage } from "./technical/TechnicalEmployeePage";
 import { AdministrationEmployeePage } from "./employees/AdministrationEmployeePage";
+import { OperationsTasksPage } from "./operations/OperationsTasksPage";
 
 const nav = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -74,16 +75,18 @@ const nav = [
   { label: "Reports", icon: BarChart3 },
 ];
 
+const operationsNav = nav.map((item) =>
+  item.label === "Assignments" ? { ...item, label: "Tasks", icon: ListTodo } : item,
+);
+
 const ceoNav = [
   { label: "Dashboard", icon: LayoutDashboard },
   { label: "Projects", icon: ClipboardList },
   { label: "Project Calendar", icon: GanttChartSquare },
   { label: "Project Approvals", icon: CheckCircle2 },
-  { label: "Quotations", icon: FileText },
   { label: "Notifications", icon: Bell },
   { label: "Employees", icon: CalendarDays },
   { label: "Finance", icon: Wallet },
-  { label: "Expenses", icon: ReceiptText },
   { label: "Reports", icon: BarChart3 },
 ];
 
@@ -271,6 +274,30 @@ export function Dashboard({
     });
   }
 
+  function notifyInvoiceSubmission(invoice: Invoice, project: Project) {
+    addNotification({
+      title: "Invoice requires approval",
+      detail: `${invoice.id} for ${project.name} was submitted by Finance.`,
+      kind: "Invoice",
+      recipient: "ceo",
+    });
+    notify(`${invoice.id} submitted for CEO review.`);
+  }
+
+  function notifyInvoiceRevision(
+    invoice: Invoice,
+    project: Project,
+    comment: string,
+  ) {
+    addNotification({
+      title: "Invoice revision requested",
+      detail: `${invoice.id} for ${project.name} needs changes: ${comment}`,
+      kind: "Invoice",
+      recipient: "finance",
+    });
+    notify(`${invoice.id} revision request sent to Finance.`);
+  }
+
   const visibleNotifications = notifications.filter(
     (notification) =>
       notification.recipient === "all" || notification.recipient === role,
@@ -284,6 +311,8 @@ export function Dashboard({
       ? administratorNav
     : isCeo
     ? ceoNav
+    : isHoo
+      ? operationsNav
     : isFinance || isHoo
       ? nav
       : nav.filter((item) => item.label !== "Expenses");
@@ -330,19 +359,13 @@ export function Dashboard({
             >
               <Icon size={17} />
               {label}
-              {(label === "Projects" ||
-                label === "Project Approvals" ||
-                label === "Quotations") && (
+              {(label === "Projects" || label === "Project Approvals") && (
                 <span className="nav-count">
                   {label === "Projects"
                     ? projects.length
-                    : label === "Quotations"
-                      ? quotationSeed.filter(
-                          (item) => item.status === "Pending approval",
-                        ).length
-                      : Object.values(approvals).filter(
-                          (item) => item.status === "Pending approval",
-                        ).length}
+                    : Object.values(approvals).filter(
+                        (item) => item.status === "Pending approval",
+                      ).length}
                 </span>
               )}
             </button>
@@ -403,7 +426,7 @@ export function Dashboard({
               />
             ) : isAdministrationEmployee ? (
               <AdministrationEmployeePage active={active} user={user} onNotify={notify} />
-            ) : isCeo ? (
+            ) : isCeo || isHoo ? (
               <CeoDashboardHome
                 projects={projects}
                 notifications={visibleNotifications}
@@ -415,7 +438,11 @@ export function Dashboard({
                 projects={projects}
                 onNotify={notify}
                 onQuotationSubmitted={notifyQuotationSubmission}
+                onInvoiceSubmitted={notifyInvoiceSubmission}
+                onInvoiceRevisionRequested={notifyInvoiceRevision}
                 initialProjectId={financeProjectId}
+                canSubmit={isFinance}
+                role={role}
               />
             ) : (
               <DashboardHome
@@ -423,8 +450,9 @@ export function Dashboard({
                 onNavigate={setActive}
                 onSelect={setSelected}
                 createLabel={
-                  isHoo ? "Create project" : isFinance ? undefined : "New project"
+                  isHoo ? undefined : isFinance ? undefined : "New project"
                 }
+                showExecutiveInsights={!isHoo}
               />
             ))}
           {active === "Project Approvals" && (
@@ -435,19 +463,19 @@ export function Dashboard({
               onSelect={setSelected}
             />
           )}
-          {active === "Quotations" && (
-            <QuotationsPage
-              projects={projects}
-              quotationApprovals={quotationApprovals}
-              onDecision={updateQuotation}
-            />
-          )}
           {active === "Finance" && (
             <FinancePage
               projects={projects}
               onNotify={notify}
               onQuotationSubmitted={notifyQuotationSubmission}
+              onInvoiceSubmitted={notifyInvoiceSubmission}
+              onInvoiceRevisionRequested={notifyInvoiceRevision}
               initialProjectId={financeProjectId}
+              initialView={isCeo ? "quotations" : "invoices"}
+              canReviewInvoices={isCeo}
+              canSubmit={isFinance}
+              reviewOnlyQuotations={isCeo}
+              role={role}
             />
           )}
           {active === "Expenses" && (
@@ -481,7 +509,9 @@ export function Dashboard({
                     onClick={() =>
                       setActive(
                         notification.kind === "Quotation"
-                          ? "Quotations"
+                          ? "Finance"
+                          : notification.kind === "Invoice"
+                            ? "Finance"
                           : notification.kind === "Project approval"
                             ? "Project Approvals"
                             : "Projects",
@@ -567,6 +597,9 @@ export function Dashboard({
                 onSelect={setSelected}
               />
             </section>
+          )}
+          {active === "Tasks" && isHoo && (
+            <OperationsTasksPage projects={projects} onNotify={notify} />
           )}
           {((active === "Employees" && !isAdministrationEmployee) || active === "People & attendance") && (
             <EmployeesPage projects={projects} isAdministrator={isAdministrator} />

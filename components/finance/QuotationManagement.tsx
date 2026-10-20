@@ -25,7 +25,7 @@ import { quotationSeed } from "../../lib/dummy-data/mock-data";
 import { PageHeader } from "../common/PageHeader";
 
 type View = "list" | "details" | "form";
-type Filter = "All" | "Draft" | "Pending approval" | "Approved" | "Rejected" | "Revision requested";
+type Filter = "All" | "Draft" | "Pending approval" | "Approved" | "Rejected" | "Revision requested" | "Review Changes";
 
 const today = () =>
   new Date().toLocaleDateString("en-GB", {
@@ -116,11 +116,15 @@ export function QuotationManagement({
   onNotify,
   onQuotationSubmitted,
   initialProjectId,
+  reviewChangesLabel = false,
+  reviewOnly = false,
 }: {
   projects: Project[];
   onNotify: (message: string) => void;
   onQuotationSubmitted?: (quotation: Quotation, project: Project) => void;
   initialProjectId?: string | null;
+  reviewChangesLabel?: boolean;
+  reviewOnly?: boolean;
 }) {
   const [quotations, setQuotations] = useState<Quotation[]>(() =>
     projects.flatMap((project) => {
@@ -140,7 +144,10 @@ export function QuotationManagement({
     const quotation = quotations.find((item) => item.projectId === project.id);
     const matchesFilter =
       filter === "All" ||
-      (quotation ? quotation.status === filter : filter === "Draft");
+      (quotation
+        ? quotation.status ===
+          (filter === "Review Changes" ? "Revision requested" : filter)
+        : filter === "Draft");
     const matchesQuery = `${quotation?.id ?? ""} ${project.name} ${project.client} ${project.id}`
       .toLowerCase()
       .includes(query.toLowerCase());
@@ -163,7 +170,7 @@ export function QuotationManagement({
     const quotation = quotations.find((item) => item.projectId === initialProjectId);
     const project = projects.find((item) => item.id === initialProjectId);
     if (quotation) openDetails(quotation);
-    else if (project) openForm(undefined, project);
+    else if (project && !reviewOnly) openForm(undefined, project);
   }, [initialProjectId]);
 
   function openForm(quotation?: Quotation, projectForNew?: Project) {
@@ -256,8 +263,8 @@ export function QuotationManagement({
             eyebrow="FINANCE / QUOTATIONS"
             title="Quotation management"
             copy="Prepare, preview, and route Chinar TV quotations through approval."
-            action="Create quotation"
-            onAction={() => openForm()}
+            action={reviewOnly ? undefined : "Create quotation"}
+            onAction={reviewOnly ? undefined : () => openForm()}
           />
           <QuotationStats quotations={quotations} />
           <div className="quotation-toolbar">
@@ -273,7 +280,7 @@ export function QuotationManagement({
               <option>All</option>
               <option>Draft</option>
               <option>Pending approval</option>
-              <option>Revision requested</option>
+              <option>{reviewChangesLabel ? "Review Changes" : "Revision requested"}</option>
               <option>Approved</option>
               <option>Rejected</option>
             </select>
@@ -284,6 +291,8 @@ export function QuotationManagement({
             onOpen={openDetails}
             onEdit={(quotation) => openForm(quotation)}
             onCreate={(project) => openForm(undefined, project)}
+            reviewChangesLabel={reviewChangesLabel}
+            reviewOnly={reviewOnly}
           />
         </>
       )}
@@ -295,6 +304,8 @@ export function QuotationManagement({
           onEdit={() => openForm(selected)}
           onPrint={() => window.print()}
           onDecide={decide}
+          reviewChangesLabel={reviewChangesLabel}
+          reviewOnly={reviewOnly}
         />
       )}
       {view === "form" && selected && selectedProject && (
@@ -330,12 +341,16 @@ function QuotationList({
   onOpen,
   onEdit,
   onCreate,
+  reviewChangesLabel,
+  reviewOnly,
 }: {
   quotations: Quotation[];
   visibleProjects: Project[];
   onOpen: (quotation: Quotation) => void;
   onEdit: (quotation: Quotation) => void;
   onCreate: (project: Project) => void;
+  reviewChangesLabel: boolean;
+  reviewOnly: boolean;
 }) {
   return (
     <div className="panel quotation-list-panel">
@@ -353,10 +368,10 @@ function QuotationList({
             <span><strong>{project.client}</strong><small>{project.name}</small></span>
             <span>{quotation?.quotationDate ?? "Not created"}</span>
             <strong>{quotation ? usd(quotation.total ?? 0) : "—"}</strong>
-            {quotation ? <StatusPill status={quotation.status} /> : <StatusPill status="Not created" />}
+            {quotation ? <StatusPill status={quotation.status} reviewChangesLabel={reviewChangesLabel} /> : <StatusPill status="Not created" />}
             <span className="quotation-row-actions">
-              {quotation ? <button className="text-button" onClick={() => onOpen(quotation)}>Open quotation <ArrowUpRight size={13} /></button> : <button className="text-button" onClick={() => onCreate(project)}>Create quotation <Plus size={13} /></button>}
-              {quotation && quotation.status !== "Approved" && <button className="icon-button" onClick={() => onEdit(quotation)} aria-label={`Edit ${quotation.id}`}><ChevronDown size={15} /></button>}
+              {quotation ? <button className="text-button" onClick={() => onOpen(quotation)}>Open quotation <ArrowUpRight size={13} /></button> : !reviewOnly ? <button className="text-button" onClick={() => onCreate(project)}>Create quotation <Plus size={13} /></button> : <span>—</span>}
+              {!reviewOnly && quotation && quotation.status !== "Approved" && <button className="icon-button" onClick={() => onEdit(quotation)} aria-label={`Edit ${quotation.id}`}><ChevronDown size={15} /></button>}
             </span>
           </div>
         );
@@ -366,8 +381,9 @@ function QuotationList({
   );
 }
 
-function StatusPill({ status }: { status: string }) {
-  return <span className={"quotation-status " + status.toLowerCase().replaceAll(" ", "-")}>{status}</span>;
+function StatusPill({ status, reviewChangesLabel = false }: { status: string; reviewChangesLabel?: boolean }) {
+  const label = reviewChangesLabel && status === "Revision requested" ? "Review Changes" : status;
+  return <span className={"quotation-status " + status.toLowerCase().replaceAll(" ", "-")}>{label}</span>;
 }
 
 function QuotationDetails({
@@ -377,6 +393,8 @@ function QuotationDetails({
   onEdit,
   onPrint,
   onDecide,
+  reviewChangesLabel,
+  reviewOnly,
 }: {
   quotation: Quotation;
   project: Project;
@@ -384,6 +402,8 @@ function QuotationDetails({
   onEdit: () => void;
   onPrint: () => void;
   onDecide: (status: "Approved" | "Rejected" | "Revision requested", comment: string) => void;
+  reviewChangesLabel: boolean;
+  reviewOnly: boolean;
 }) {
   const [comment, setComment] = useState("");
   const [confirm, setConfirm] = useState<"approve" | "reject" | "revision" | null>(null);
@@ -393,7 +413,7 @@ function QuotationDetails({
       <button className="text-button back-link" onClick={onBack}><ArrowLeft size={14} /> Back to quotations</button>
       <div className="quotation-detail-heading">
         <div><span className="eyebrow">QUOTATION DETAIL · {quotation.id}</span><h1>{quotation.project}</h1><p>{project.client} · {project.owner}</p></div>
-        <div className="quotation-detail-actions"><StatusPill status={quotation.status} /><button className="button button-secondary" onClick={onPrint}><Printer size={14} /> Print / PDF</button>{quotation.status !== "Approved" && <button className="button button-primary" onClick={onEdit}>Edit quotation</button>}</div>
+        <div className="quotation-detail-actions"><StatusPill status={quotation.status} reviewChangesLabel={reviewChangesLabel} /><button className="button button-secondary" onClick={onPrint}><Printer size={14} /> Print / PDF</button>{!reviewOnly && quotation.status !== "Approved" && <button className="button button-primary" onClick={onEdit}>Edit quotation</button>}</div>
       </div>
       <div className="quotation-detail-grid">
         <div className="quotation-paper-wrap"><QuotationPreview quotation={quotation} project={project} /></div>

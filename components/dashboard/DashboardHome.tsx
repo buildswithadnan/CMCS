@@ -30,12 +30,14 @@ export function DashboardHome({
   projects,
   onNavigate,
   onSelect,
-  createLabel = "New project",
+  createLabel,
+  showExecutiveInsights = true,
 }: {
   projects: Project[];
   onNavigate: (s: string) => void;
   onSelect: (p: Project) => void;
   createLabel?: string;
+  showExecutiveInsights?: boolean;
 }) {
   const metrics = {
     total: projects.length,
@@ -83,8 +85,8 @@ export function DashboardHome({
           tone="green"
         />
       </section>
-      <ProjectGraphs projects={projects} />
-      <section className="dashboard-grid">
+      {showExecutiveInsights && <ProjectGraphs projects={projects} />}
+      {showExecutiveInsights && <section className="dashboard-grid">
         <article className="panel chart-panel wide">
           <div className="panel-heading">
             <div>
@@ -155,7 +157,7 @@ export function DashboardHome({
             ))}
           </div>
         </article>
-      </section>
+      </section>}
       <section className="panel">
         <div className="panel-heading">
           <div>

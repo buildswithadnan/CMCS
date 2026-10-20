@@ -22,6 +22,7 @@ export { CeoApproval } from "./ceo/CeoApproval";
 export { CeoApprovals } from "./ceo/CeoApprovals";
 export { QuotationCard } from "./finance/QuotationCard";
 export { QuotationsPage } from "./finance/QuotationsPage";
+export { InvoicePage } from "./finance/InvoicePage";
 export { FinancePage } from "./finance/FinancePage";
 export { ExpensesPage } from "./finance/ExpensesPage";
 export { TechnicalEmployeePage } from "./technical/TechnicalEmployeePage";

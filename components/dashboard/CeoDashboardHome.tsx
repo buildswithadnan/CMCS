@@ -169,7 +169,7 @@ export function CeoDashboardHome({
           <button
             className="button button-secondary"
             style={{ fontSize: "12px", padding: "6px 12px" }}
-            onClick={() => onNavigate("Quotations")}
+            onClick={() => onNavigate("Finance")}
           >
             Review Quotations
           </button>

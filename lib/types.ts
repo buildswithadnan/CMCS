@@ -167,6 +167,7 @@ export type Invoice = {
   quotationId: string;
   project: string;
   amount: number;
+  submitted?: string;
   status: string;
   generationStatus: string;
   paymentStatus: string;
@@ -174,10 +175,12 @@ export type Invoice = {
 
 export type Payment = {
   id: string;
+  invoiceId?: string;
   projectId: string;
   quotationId: string;
   project: string;
   amount: number;
+  amountPaid?: number;
   status: string;
   generationStatus: string;
   paymentStatus: string;
