@@ -8,6 +8,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardList,
+  DollarSign,
   FileText,
   GanttChartSquare,
   LayoutDashboard,
@@ -60,12 +61,15 @@ import { InvoicePage } from "./finance/InvoicePage";
 import { QuotationManagement } from "./finance/QuotationManagement";
 import { PaymentsPage } from "./finance/PaymentsPage";
 import { ExpensesPage } from "./finance/ExpensesPage";
+import { SalariesPage } from "./finance/SalariesPage";
+import { EquipmentRentalPage } from "./finance/EquipmentRentalPage";
 import { EmployeesPage } from "./employees/EmployeesPage";
 import { ModulePage } from "./modules/ModulePage";
 import { TechnicalEmployeePage } from "./technical/TechnicalEmployeePage";
 import { AdministrationEmployeePage } from "./employees/AdministrationEmployeePage";
 import { OperationsTasksPage } from "./operations/OperationsTasksPage";
 import { FinanceDashboard } from "./finance/FinanceDashboard";
+import { ProductionPage } from "./production/ProductionPage";
 
 const nav = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -114,6 +118,8 @@ const financeNav = [
   { label: "Invoices", icon: ReceiptText },
   { label: "Payments", icon: Wallet },
   { label: "Expenses", icon: ClipboardCheck },
+  { label: "Salaries", icon: DollarSign },
+  { label: "Equipment Rental", icon: Package },
   { label: "Projects", icon: ClipboardList },
   { label: "Project Calendar", icon: GanttChartSquare },
   { label: "Documents", icon: FileText },
@@ -144,6 +150,13 @@ const administrationEmployeeNav = [
   { label: "My Profile", icon: UserCircle },
 ];
 
+const productionNav = [
+  { label: "Dashboard", icon: LayoutDashboard },
+  { label: "My Tasks", icon: ListTodo },
+  { label: "Projects", icon: ClipboardList },
+  { label: "Attendance", icon: UserCheck },
+];
+
 export function Dashboard({
   user,
   onLogout,
@@ -160,6 +173,7 @@ export function Dashboard({
   const isHoo = role === "hoo";
   const isFinance = role === "finance";
   const isTechnical = role === "technical";
+  const isProduction = role === "production";
   const isAdministrator = role === "admin";
   const isAdministrationEmployee = role === "administrationEmployee";
   const [active, setActive] = useState("Dashboard");
@@ -334,6 +348,8 @@ export function Dashboard({
       ? operationsNav
     : isFinance
       ? financeNav
+    : isProduction
+      ? productionNav
     : nav.filter((item) => item.label !== "Expenses");
 
   return (
@@ -471,6 +487,13 @@ export function Dashboard({
                   }
                 }}
               />
+            ) : isProduction ? (
+              <ProductionPage
+                active="Dashboard"
+                user={user}
+                projects={projects}
+                onNotify={notify}
+              />
             ) : (
               <DashboardHome
                 projects={projects}
@@ -536,8 +559,22 @@ export function Dashboard({
           {active === "Expenses" && (
             <ExpensesPage projects={projects} role={role} onNotify={notify} />
           )}
+          {active === "Salaries" && (
+            <SalariesPage projects={projects} onNotify={notify} />
+          )}
+          {active === "Equipment Rental" && (
+            <EquipmentRentalPage projects={projects} onNotify={notify} />
+          )}
           {isTechnical && active !== "Dashboard" && (
             <TechnicalEmployeePage
+              active={active}
+              user={user}
+              projects={projects}
+              onNotify={notify}
+            />
+          )}
+          {isProduction && active !== "Dashboard" && (
+            <ProductionPage
               active={active}
               user={user}
               projects={projects}
@@ -590,13 +627,9 @@ export function Dashboard({
           {active === "Projects" && (
             <section className="page-section">
               <PageHeader
-                eyebrow={isHoo ? "OPERATIONS CONTROL CENTRE / PROJECTS" : "OPERATIONS / PROJECTS"}
+                eyebrow=""
                 title="Projects"
-                copy={
-                  isHoo
-                    ? "Create and coordinate project submissions across production teams."
-                    : "Track approved work from start to completion."
-                }
+                copy=""
                 action={
                   isCeo || isFinance
                     ? undefined

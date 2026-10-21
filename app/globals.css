@@ -1,4 +1,6 @@
 ﻿@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+@import url("./production-enhanced.css");
+
 :root {
   --navy: #17233b;
   --ink: #192236;
@@ -14934,4 +14936,202 @@ button {
 @media(max-width:560px){
   .ceo2-kpi-grid{grid-template-columns:1fr 1fr}
   .ceo2-header-left h1{font-size:22px}
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Production Department Workspace
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Stat grid ── */
+.prod-stat-grid{grid-template-columns:repeat(4,1fr)}
+
+/* ── Dashboard grid ── */
+.prod-dashboard-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:0}
+
+/* ── Task list (dashboard widget) ── */
+.prod-task-list{display:flex;flex-direction:column;gap:0}
+.prod-task-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);width:100%;text-align:left;background:none;border-top:0;border-left:0;border-right:0;cursor:pointer;transition:background .12s}
+.prod-task-row:last-child{border-bottom:0}
+.prod-task-row:hover{background:#f8fafe;margin:0 -4px;padding-left:4px;padding-right:4px;border-radius:8px}
+.prod-task-row-main{flex:1;min-width:0}
+.prod-task-row-main strong{display:block;font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-task-row-main small{display:block;font-size:10px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-task-row-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.prod-mini-progress{width:56px;height:5px;background:#edf1f6;border-radius:99px;overflow:hidden}
+.prod-mini-progress span{display:block;height:100%;background:#2563eb;border-radius:99px}
+.prod-task-row-right small{font-size:10px;color:var(--muted);white-space:nowrap}
+.prod-empty-note{color:var(--muted);font-size:12px;padding:16px 0;text-align:center}
+
+/* ── Project list (dashboard widget) ── */
+.prod-proj-list{display:flex;flex-direction:column;gap:0}
+.prod-proj-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.prod-proj-row:last-child{border-bottom:0}
+.prod-proj-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.prod-proj-dot.in-progress{background:#2563eb}
+.prod-proj-dot.upcoming{background:#8b5cf6}
+.prod-proj-dot.completed{background:#16a34a}
+.prod-proj-dot.rejected{background:#dc2626}
+.prod-proj-info{flex:1;min-width:0}
+.prod-proj-info strong{display:block;font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-proj-info small{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── Attendance list (dashboard widget) ── */
+.prod-att-list{display:flex;flex-direction:column;gap:0}
+.prod-att-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+.prod-att-row:last-child{border-bottom:0}
+.prod-att-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.prod-att-present{background:#16a34a}
+.prod-att-absent{background:#dc2626}
+.prod-att-late{background:#f59e0b}
+.prod-att-info{flex:1;min-width:0}
+.prod-att-info strong{display:block;font-size:12px;color:var(--ink)}
+.prod-att-info small{display:block;font-size:10px;color:var(--muted)}
+.prod-att-row time{font-size:10px;color:var(--muted);white-space:nowrap}
+
+/* ── Toolbar ── */
+.prod-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.prod-toolbar .inline-search{flex:1;min-width:180px}
+.prod-toolbar select{padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:13px;color:var(--ink);background:#fff;cursor:pointer;outline:none}
+.prod-toolbar select:focus{border-color:#2563eb;box-shadow:0 0 0 3px #2563eb16}
+
+/* ── My Tasks — summary chips ── */
+.prod-task-summary{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.prod-task-chip{flex:1;min-width:80px;padding:10px 12px;border-radius:12px;text-align:center;background:#fff;border:1px solid var(--line)}
+.prod-task-chip strong{display:block;font-size:20px;font-weight:800;color:var(--ink);font-family:'Space Grotesk',sans-serif}
+.prod-task-chip span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.prod-task-chip-blue{border-color:#c8d9f5;background:#f0f6ff}
+.prod-task-chip-blue strong{color:#2563eb}
+.prod-task-chip-amber{border-color:#fde9a0;background:#fff8e6}
+.prod-task-chip-amber strong{color:#d97706}
+.prod-task-chip-green{border-color:#bbf0d5;background:#edfaf3}
+.prod-task-chip-green strong{color:#16a34a}
+
+/* ── Task cards grid ── */
+.prod-task-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.prod-task-card .panel-heading{margin-bottom:8px}
+.prod-task-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.prod-task-card-head .eyebrow{font-size:9px;margin-bottom:3px;display:block}
+.prod-task-card-head h3{margin:0;font-size:14px;font-weight:700;color:var(--ink);line-height:1.3}
+.prod-task-card-head small{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.prod-task-card-desc{font-size:12px;color:#64748b;line-height:1.6;margin:0 0 12px}
+.prod-task-card-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;color:var(--muted)}
+.prod-task-card-meta span{display:flex;align-items:center;gap:4px}
+.prod-priority{padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.prod-priority.high{color:#dc2626;background:#fff0f0}
+.prod-priority.medium{color:#d97706;background:#fff8e6}
+.prod-priority.low{color:#16a34a;background:#edfaf3}
+.prod-task-card-progress{margin-bottom:14px}
+.prod-task-progress-bar{height:6px;background:#edf1f6;border-radius:99px;overflow:hidden;margin-bottom:5px}
+.prod-task-progress-bar span{display:block;height:100%;background:#2563eb;border-radius:99px;transition:width .3s}
+.prod-task-card-progress small{font-size:11px;color:var(--muted)}
+.prod-task-card-btn{width:100%;justify-content:center;gap:6px;font-size:12px}
+
+/* ── Task modal ── */
+.prod-task-dialog{width:min(100%,520px)}
+.prod-task-meta{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin:16px 0;padding:14px;background:#f8fafc;border-radius:10px}
+.prod-task-meta span{display:grid;gap:4px}
+.prod-task-meta small{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.prod-task-meta strong,.prod-task-meta b{font-size:12px;color:var(--ink)}
+.prod-task-desc{font-size:13px;color:#64748b;line-height:1.65;margin:0 0 18px;padding:12px 14px;background:#f8fafc;border-radius:9px;border-left:3px solid #c8d9f5}
+.prod-progress-label{display:block;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.prod-progress-label input[type="range"]{display:block;width:100%;margin:10px 0 8px;accent-color:#2563eb}
+.prod-progress-bar{height:8px;background:#edf1f6;border-radius:99px;overflow:hidden}
+.prod-progress-bar span{display:block;height:100%;background:#2563eb;border-radius:99px;transition:width .2s}
+
+/* ── Projects cards ── */
+.prod-proj-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.prod-proj-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.prod-proj-card-head .eyebrow{font-size:9px;margin-bottom:3px;display:block}
+.prod-proj-card-head h3{margin:0;font-size:14px;font-weight:700;color:var(--ink)}
+.prod-proj-card-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:14px}
+.prod-proj-card-meta div{display:grid;gap:3px}
+.prod-proj-card-meta small{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.prod-proj-card-meta strong{font-size:12px;color:var(--ink);display:flex;align-items:center;gap:5px}
+.prod-lead-you{color:#2563eb}
+.prod-lead-badge{display:inline-block;padding:1px 7px;background:#eef4ff;color:#2563eb;border-radius:99px;font-size:9px;font-weight:700;margin-left:4px}
+.prod-proj-card-progress{margin-bottom:14px}
+.prod-proj-progress-bar{height:6px;background:#edf1f6;border-radius:99px;overflow:hidden;margin-bottom:5px}
+.prod-proj-progress-bar span{display:block;height:100%;background:#2563eb;border-radius:99px}
+.prod-proj-card-progress small{font-size:11px;color:var(--muted)}
+.prod-proj-team small{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px}
+.prod-team-avatars{display:flex;gap:4px;flex-wrap:wrap}
+.prod-team-avatar{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#eef4ff;color:#2563eb;font-size:10px;font-weight:700;border:2px solid #fff;box-shadow:0 0 0 1px #c8d9f5}
+.prod-team-more{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#f0f2f5;color:var(--muted);font-size:10px;font-weight:700;border:2px solid #fff}
+
+/* ── Attendance page ── */
+.prod-att-hero{display:flex;align-items:center;gap:20px;padding:20px 24px;margin-bottom:18px;background:linear-gradient(135deg,#f0f5ff,#f5f3ff);flex-wrap:wrap}
+.prod-att-identity{display:flex;align-items:center;gap:14px;flex:1;min-width:200px}
+.prod-att-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:16px;font-weight:800;flex-shrink:0}
+.prod-att-identity .eyebrow{font-size:9px;display:block}
+.prod-att-identity h2{margin:4px 0 2px;font-size:18px;color:var(--ink)}
+.prod-att-identity p{margin:0;font-size:12px;color:var(--muted)}
+.prod-att-live{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#fff;border-radius:10px;border:1px solid var(--line)}
+.prod-att-live-dot{width:10px;height:10px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 3px #bbf0d5;flex-shrink:0;animation:att-pulse 2s infinite}
+@keyframes att-pulse{0%,100%{box-shadow:0 0 0 3px #bbf0d5}50%{box-shadow:0 0 0 6px #bbf0d555}}
+.prod-att-live strong{display:block;font-size:13px;color:var(--ink)}
+.prod-att-live small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.prod-att-location{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+.prod-att-location svg{color:#2563eb;flex-shrink:0}
+.prod-att-location small{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.prod-att-location strong{display:block;font-size:12px;color:var(--ink)}
+.prod-att-actions{flex-shrink:0}
+.prod-att-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.prod-att-chip{padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:#fff;text-align:center}
+.prod-att-chip strong{display:block;font-size:22px;font-weight:800;color:var(--ink);font-family:'Space Grotesk',sans-serif}
+.prod-att-chip span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.prod-att-chip-green strong{color:#16a34a}
+.prod-att-chip-amber strong{color:#d97706}
+.prod-att-chip-red strong{color:#dc2626}
+.prod-att-chip-blue strong{color:#2563eb}
+.prod-att-table{width:100%;border-collapse:collapse}
+.prod-att-table th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.prod-att-table td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink)}
+.prod-att-table tr:last-child td{border-bottom:0}
+
+/* ── Responsive ── */
+@media(max-width:1100px){
+  .prod-dashboard-grid{grid-template-columns:1fr 1fr}
+  .prod-task-cards{grid-template-columns:1fr}
+  .prod-proj-cards{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .prod-stat-grid{grid-template-columns:1fr 1fr}
+  .prod-dashboard-grid{grid-template-columns:1fr}
+  .prod-att-hero{flex-direction:column;align-items:flex-start}
+  .prod-att-summary{grid-template-columns:1fr 1fr}
+  .prod-task-summary{flex-wrap:wrap}
+  .prod-task-meta{grid-template-columns:1fr 1fr}
+}
+
+
+/* Finance - Salaries & Equipment Rental Enhancements */
+.status-pill.partially-paid {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.invoice-summary-card.partial {
+  border-top: 3px solid #f59e0b;
+}
+
+/* Enhanced dialog grid for finance forms */
+.dialog-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.dialog-form label {
+  display: block;
+  color: #53627a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dialog-form input,
+.dialog-form select,
+.dialog-form textarea {
+  width: 100%;
+  margin-top: 7px;
 }

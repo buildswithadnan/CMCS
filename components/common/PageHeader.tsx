@@ -17,9 +17,9 @@ export function PageHeader({
   return (
     <section className="page-heading">
       <div>
-        <span className="eyebrow">{eyebrow}</span>
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
         <h1>{title}</h1>
-        <p>{copy}</p>
+        {copy && <p>{copy}</p>}
       </div>
       {action && (
         <button className="button button-primary" onClick={onAction}>

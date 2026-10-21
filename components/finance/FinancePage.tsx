@@ -5,6 +5,8 @@ import { Invoice, Project, Quotation, Role } from "../../lib/types";
 import { InvoicePage } from "./InvoicePage";
 import { QuotationManagement } from "./QuotationManagement";
 import { ExpensesPage } from "./ExpensesPage";
+import { SalariesPage } from "./SalariesPage";
+import { EquipmentRentalPage } from "./EquipmentRentalPage";
 
 export function FinancePage({
   projects,
@@ -25,14 +27,16 @@ export function FinancePage({
   onInvoiceSubmitted?: (invoice: Invoice, project: Project) => void;
   onInvoiceRevisionRequested?: (invoice: Invoice, project: Project, comment: string) => void;
   initialProjectId?: string | null;
-  initialView?: "invoices" | "quotations" | "expenses";
+  initialView?: "invoices" | "quotations" | "expenses" | "salaries" | "equipment";
   canReviewInvoices?: boolean;
   canSubmit?: boolean;
   reviewOnlyQuotations?: boolean;
   role?: Role;
 }) {
-  const [view, setView] = useState<"invoices" | "quotations" | "expenses">(initialView);
+  const [view, setView] = useState<"invoices" | "quotations" | "expenses" | "salaries" | "equipment">(initialView);
   const showExpenses = role === "ceo" || role === "hoo";
+  const showSalaries = role === "ceo" || role === "hoo" || role === "finance";
+  const showEquipment = role === "ceo" || role === "hoo" || role === "finance";
 
   return (
     <section className="page-section finance-workspace">
@@ -63,9 +67,33 @@ export function FinancePage({
             Expenses
           </button>
         )}
+        {showSalaries && (
+          <button
+            className={view === "salaries" ? "selected" : ""}
+            onClick={() => setView("salaries")}
+            role="tab"
+            aria-selected={view === "salaries"}
+          >
+            Salaries
+          </button>
+        )}
+        {showEquipment && (
+          <button
+            className={view === "equipment" ? "selected" : ""}
+            onClick={() => setView("equipment")}
+            role="tab"
+            aria-selected={view === "equipment"}
+          >
+            Equipment Rental
+          </button>
+        )}
       </div>
       {view === "expenses" && showExpenses ? (
         <ExpensesPage projects={projects} role={role ?? "ceo"} onNotify={onNotify} />
+      ) : view === "salaries" && showSalaries ? (
+        <SalariesPage projects={projects} onNotify={onNotify} />
+      ) : view === "equipment" && showEquipment ? (
+        <EquipmentRentalPage projects={projects} onNotify={onNotify} />
       ) : view === "quotations" ? (
         <QuotationManagement
           projects={projects}

@@ -205,3 +205,53 @@ export type EmployeeAttendance = {
   completedProjects: number;
   records: AttendanceRecord[];
 };
+
+export type PaymentStatus = "Paid" | "Unpaid" | "Partially Paid";
+
+export type Salary = {
+  id: string;
+  employeeName: string;
+  employeeId: string;
+  projectId: string;
+  project: string;
+  role: string;
+  amount: number;
+  paymentStatus: PaymentStatus;
+  paymentDate: string;
+  paidAmount?: number;
+  notes?: string;
+  history?: SalaryHistory[];
+};
+
+export type SalaryHistory = {
+  date: string;
+  action: string;
+  amount: number;
+  actor: string;
+  note?: string;
+};
+
+export type EquipmentRental = {
+  id: string;
+  equipmentName: string;
+  category: string;
+  projectId: string;
+  project: string;
+  rentalProvider: string;
+  rentalCost: number;
+  rentalStartDate: string;
+  rentalEndDate: string;
+  paymentStatus: PaymentStatus;
+  paidAmount?: number;
+  quantity: number;
+  notes?: string;
+  history?: EquipmentRentalHistory[];
+};
+
+export type EquipmentRentalHistory = {
+  date: string;
+  action: string;
+  amount?: number;
+  actor: string;
+  note?: string;
+};
