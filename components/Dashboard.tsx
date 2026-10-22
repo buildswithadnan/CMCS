@@ -70,6 +70,7 @@ import { AdministrationEmployeePage } from "./employees/AdministrationEmployeePa
 import { OperationsTasksPage } from "./operations/OperationsTasksPage";
 import { FinanceDashboard } from "./finance/FinanceDashboard";
 import { ProductionPage } from "./production/ProductionPage";
+import { AdministrationPage } from "./administration/AdministrationPage";
 
 const nav = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -127,14 +128,15 @@ const financeNav = [
 ];
 
 const administratorNav = [
-  { label: "Dashboard", icon: LayoutDashboard },
-  { label: "Projects", icon: ClipboardList },
-  { label: "Project Calendar", icon: GanttChartSquare },
-  { label: "Employees", icon: Users },
-  { label: "Finance", icon: Wallet },
-  { label: "Documents", icon: FileText },
-  { label: "Reports", icon: BarChart3 },
-  { label: "Settings", icon: ClipboardCheck },
+  { label: "Dashboard",              icon: LayoutDashboard },
+  { label: "User Management",        icon: Users },
+  { label: "Roles & Permissions",    icon: ShieldCheck },
+  { label: "Department Management",  icon: ClipboardList },
+  { label: "Notifications",          icon: Bell },
+  { label: "Audit Logs",             icon: BarChart3 },
+  { label: "Documents & Templates",  icon: FileText },
+  { label: "System Settings",        icon: ClipboardCheck },
+  { label: "Backup & System Health", icon: HardDrive },
 ];
 
 const administrationEmployeeNav = [
@@ -494,6 +496,12 @@ export function Dashboard({
                 projects={projects}
                 onNotify={notify}
               />
+            ) : isAdministrator ? (
+              <AdministrationPage
+                active="Dashboard"
+                user={user}
+                onNotify={notify}
+              />
             ) : (
               <DashboardHome
                 projects={projects}
@@ -578,6 +586,14 @@ export function Dashboard({
               active={active}
               user={user}
               projects={projects}
+              onNotify={notify}
+            />
+          )}
+          {/* ── Administrator: full admin department ── */}
+          {isAdministrator && (
+            <AdministrationPage
+              active={active}
+              user={user}
               onNotify={notify}
             />
           )}
