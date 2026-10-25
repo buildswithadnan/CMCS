@@ -2,23 +2,26 @@
 
 import { useState, useMemo } from "react";
 import {
-  DollarSign,
-  Search,
-  Plus,
-  X,
-  Calendar,
-  User,
-  Briefcase,
+  ArrowUpRight,
+  Banknote,
+  CheckCircle2,
+  ChevronRight,
   Clock,
-  CheckCircle,
-  AlertCircle,
+  DollarSign,
   Edit2,
   Eye,
+  FileText,
+  Plus,
+  Search,
+  TrendingUp,
+  User,
+  Users,
+  X,
 } from "lucide-react";
-import { Project, Salary, SalaryHistory, PaymentStatus } from "../../lib/types";
+import { Project, Salary, PaymentStatus } from "../../lib/types";
 import { PageHeader } from "../common/PageHeader";
 
-// Mock data for salaries
+/* ── seed data ────────────────────────────────────────────── */
 const mockSalaries: Salary[] = [
   {
     id: "SAL-001",
@@ -31,14 +34,7 @@ const mockSalaries: Salary[] = [
     paymentStatus: "Paid",
     paymentDate: "2026-10-15",
     paidAmount: 85000,
-    history: [
-      {
-        date: "2026-10-15",
-        action: "Payment Completed",
-        amount: 85000,
-        actor: "Finance Manager",
-      },
-    ],
+    history: [{ date: "2026-10-15", action: "Payment Completed", amount: 85000, actor: "Finance Manager" }],
   },
   {
     id: "SAL-002",
@@ -51,15 +47,7 @@ const mockSalaries: Salary[] = [
     paymentStatus: "Partially Paid",
     paymentDate: "2026-10-20",
     paidAmount: 32500,
-    history: [
-      {
-        date: "2026-10-10",
-        action: "Partial Payment",
-        amount: 32500,
-        actor: "Finance Manager",
-        note: "50% advance payment",
-      },
-    ],
+    history: [{ date: "2026-10-10", action: "Partial Payment", amount: 32500, actor: "Finance Manager", note: "50% advance payment" }],
   },
   {
     id: "SAL-003",
@@ -84,14 +72,7 @@ const mockSalaries: Salary[] = [
     paymentStatus: "Paid",
     paymentDate: "2026-10-12",
     paidAmount: 70000,
-    history: [
-      {
-        date: "2026-10-12",
-        action: "Payment Completed",
-        amount: 70000,
-        actor: "Finance Manager",
-      },
-    ],
+    history: [{ date: "2026-10-12", action: "Payment Completed", amount: 70000, actor: "Finance Manager" }],
   },
   {
     id: "SAL-005",
@@ -107,238 +88,211 @@ const mockSalaries: Salary[] = [
   },
 ];
 
+/* ── helpers ──────────────────────────────────────────────── */
+const fmt    = (n: number) => `${n.toLocaleString()} AFN`;
+const fmtDate = (d: string) =>
+  new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+
+const STATUS_META: Record<PaymentStatus, { label: string; cls: string; icon: typeof CheckCircle2 }> = {
+  Paid:            { label: "Paid",          cls: "sal-pill-green",  icon: CheckCircle2 },
+  "Partially Paid":{ label: "Partially Paid",cls: "sal-pill-amber",  icon: Clock        },
+  Unpaid:          { label: "Unpaid",        cls: "sal-pill-red",    icon: Clock        },
+};
+
+function StatusPill({ status }: { status: PaymentStatus }) {
+  const m = STATUS_META[status];
+  const Icon = m.icon;
+  return (
+    <span className={`sal-pill ${m.cls}`}>
+      <Icon size={10} />
+      {m.label}
+    </span>
+  );
+}
+
+/* ── Salary Dialog ────────────────────────────────────────── */
 function SalaryDialog({
-  salary,
-  projects,
-  onClose,
-  onSave,
-  mode,
+  salary, projects, onClose, onSave, mode,
 }: {
-  salary: Salary | null;
-  projects: Project[];
-  onClose: () => void;
-  onSave: (salary: Salary) => void;
+  salary: Salary | null; projects: Project[];
+  onClose: () => void; onSave: (s: Salary) => void;
   mode: "add" | "edit" | "view";
 }) {
-  const [formData, setFormData] = useState<Salary>(
-    salary || {
-      id: "",
-      employeeName: "",
-      employeeId: "",
-      projectId: "",
-      project: "",
-      role: "",
-      amount: 0,
-      paymentStatus: "Unpaid",
-      paymentDate: "",
-      paidAmount: 0,
-      notes: "",
-      history: [],
+  const [form, setForm] = useState<Salary>(
+    salary ?? {
+      id: "", employeeName: "", employeeId: "", projectId: "",
+      project: "", role: "", amount: 0, paymentStatus: "Unpaid",
+      paymentDate: "", paidAmount: 0, notes: "", history: [],
     }
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mode === "view") return;
-
-    const selectedProject = projects.find((p) => p.id === formData.projectId);
-    const newSalary: Salary = {
-      ...formData,
-      id: salary?.id || `SAL-${Date.now()}`,
-      project: selectedProject?.name || "",
-      history: [
-        ...(formData.history || []),
-        {
-          date: new Date().toISOString().split("T")[0],
-          action: salary ? "Updated" : "Created",
-          amount: formData.amount,
-          actor: "Finance Manager",
-        },
-      ],
-    };
-
-    onSave(newSalary);
-  };
-
   const isView = mode === "view";
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (isView) return;
+    const proj = projects.find((p) => p.id === form.projectId);
+    onSave({
+      ...form,
+      id: salary?.id || `SAL-${String(Date.now()).slice(-4)}`,
+      project: proj?.name || "",
+      history: [
+        ...(form.history || []),
+        { date: new Date().toISOString().split("T")[0], action: salary ? "Updated" : "Created", amount: form.amount, actor: "Finance Manager" },
+      ],
+    });
+  }
+
+  const paidPct = form.amount > 0 ? Math.round(((form.paidAmount || 0) / form.amount) * 100) : 0;
+
   return (
-    <div className="dialog-backdrop">
-      <div className="dialog" style={{ maxWidth: "680px" }}>
-        <div className="dialog-head">
-          <div>
-            <span className="eyebrow">
-              {mode === "add" ? "ADD NEW SALARY" : mode === "edit" ? "EDIT SALARY" : "SALARY DETAILS"}
-            </span>
-            <h2>{formData.employeeName || "New Salary Record"}</h2>
+    <div className="sal-modal-overlay" onClick={onClose}>
+      <div className="sal-modal" onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="sal-modal-head">
+          <div className="sal-modal-head-left">
+            <div className="sal-modal-avatar">
+              {form.employeeName ? form.employeeName.slice(0, 2).toUpperCase() : "SA"}
+            </div>
+            <div>
+              <span className="sal-eyebrow">
+                {mode === "add" ? "NEW SALARY RECORD" : mode === "edit" ? "EDIT RECORD" : "SALARY DETAILS"}
+              </span>
+              <h2 className="sal-modal-title">
+                {form.employeeName || "New Salary Record"}
+              </h2>
+              {form.id && <code className="sal-modal-id">{form.id}</code>}
+            </div>
           </div>
-          <button className="icon-button" onClick={onClose} aria-label="Close">
+          <button className="sal-modal-close icon-button" onClick={onClose} aria-label="Close">
             <X size={18} />
           </button>
         </div>
 
-        <form className="dialog-form" onSubmit={handleSubmit}>
-          <label>
-            Employee Name *
-            <input
-              type="text"
-              value={formData.employeeName}
-              onChange={(e) =>
-                setFormData({ ...formData, employeeName: e.target.value })
-              }
-              required
-              disabled={isView}
-            />
-          </label>
+        {/* View mode: payment progress banner */}
+        {isView && (
+          <div className="sal-modal-progress-banner">
+            <div className="sal-modal-progress-info">
+              <span>Payment progress</span>
+              <strong>{paidPct}%</strong>
+            </div>
+            <div className="sal-progress-track">
+              <div
+                className="sal-progress-fill"
+                style={{
+                  width: `${paidPct}%`,
+                  background: paidPct === 100 ? "#16a34a" : paidPct > 0 ? "#d97706" : "#dc2626",
+                }}
+              />
+            </div>
+            <div className="sal-modal-progress-amounts">
+              <span>Paid: <strong>{fmt(form.paidAmount || 0)}</strong></span>
+              <span>Total: <strong>{fmt(form.amount)}</strong></span>
+            </div>
+          </div>
+        )}
 
-          <label>
-            Employee ID *
-            <input
-              type="text"
-              value={formData.employeeId}
-              onChange={(e) =>
-                setFormData({ ...formData, employeeId: e.target.value })
-              }
-              required
-              disabled={isView}
-            />
-          </label>
-
-          <label>
-            Project *
-            <select
-              value={formData.projectId}
-              onChange={(e) =>
-                setFormData({ ...formData, projectId: e.target.value })
-              }
-              required
-              disabled={isView}
-            >
-              <option value="">Select project</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.id})
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Assigned Role *
-            <input
-              type="text"
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              placeholder="e.g. Director, Camera Operator"
-              required
-              disabled={isView}
-            />
-          </label>
-
-          <label>
-            Salary Amount (AFN) *
-            <input
-              type="number"
-              value={formData.amount}
-              onChange={(e) =>
-                setFormData({ ...formData, amount: Number(e.target.value) })
-              }
-              required
-              disabled={isView}
-              min="0"
-            />
-          </label>
-
-          <label>
-            Payment Status *
-            <select
-              value={formData.paymentStatus}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  paymentStatus: e.target.value as PaymentStatus,
-                })
-              }
-              required
-              disabled={isView}
-            >
-              <option value="Unpaid">Unpaid</option>
-              <option value="Partially Paid">Partially Paid</option>
-              <option value="Paid">Paid</option>
-            </select>
-          </label>
-
-          <label>
-            Payment Date *
-            <input
-              type="date"
-              value={formData.paymentDate}
-              onChange={(e) =>
-                setFormData({ ...formData, paymentDate: e.target.value })
-              }
-              required
-              disabled={isView}
-            />
-          </label>
-
-          {formData.paymentStatus === "Partially Paid" && (
-            <label>
-              Paid Amount (AFN)
+        <form className="sal-modal-form" onSubmit={handleSubmit}>
+          <div className="sal-form-grid">
+            <label className="sal-form-field">
+              <span>Employee Name {!isView && <b className="sal-req">*</b>}</span>
               <input
-                type="number"
-                value={formData.paidAmount || 0}
-                onChange={(e) =>
-                  setFormData({ ...formData, paidAmount: Number(e.target.value) })
-                }
-                disabled={isView}
-                min="0"
-                max={formData.amount}
+                type="text" value={form.employeeName} disabled={isView} required={!isView}
+                placeholder="e.g. Ahmad Khan"
+                onChange={(e) => setForm({ ...form, employeeName: e.target.value })}
               />
             </label>
-          )}
+            <label className="sal-form-field">
+              <span>Employee ID {!isView && <b className="sal-req">*</b>}</span>
+              <input
+                type="text" value={form.employeeId} disabled={isView} required={!isView}
+                placeholder="e.g. EMP-001"
+                onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
+              />
+            </label>
+            <label className="sal-form-field sal-field-span">
+              <span>Project {!isView && <b className="sal-req">*</b>}</span>
+              <select
+                value={form.projectId} disabled={isView} required={!isView}
+                onChange={(e) => setForm({ ...form, projectId: e.target.value })}
+              >
+                <option value="">Select project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} ({p.id})</option>
+                ))}
+              </select>
+            </label>
+            <label className="sal-form-field">
+              <span>Assigned Role {!isView && <b className="sal-req">*</b>}</span>
+              <input
+                type="text" value={form.role} disabled={isView} required={!isView}
+                placeholder="e.g. Director of Photography"
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+              />
+            </label>
+            <label className="sal-form-field">
+              <span>Salary Amount (AFN) {!isView && <b className="sal-req">*</b>}</span>
+              <input
+                type="number" value={form.amount} disabled={isView} required={!isView} min={0}
+                onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })}
+              />
+            </label>
+            <label className="sal-form-field">
+              <span>Payment Status {!isView && <b className="sal-req">*</b>}</span>
+              <select
+                value={form.paymentStatus} disabled={isView} required={!isView}
+                onChange={(e) => setForm({ ...form, paymentStatus: e.target.value as PaymentStatus })}
+              >
+                <option value="Unpaid">Unpaid</option>
+                <option value="Partially Paid">Partially Paid</option>
+                <option value="Paid">Paid</option>
+              </select>
+            </label>
+            <label className="sal-form-field">
+              <span>Payment Date {!isView && <b className="sal-req">*</b>}</span>
+              <input
+                type="date" value={form.paymentDate} disabled={isView} required={!isView}
+                onChange={(e) => setForm({ ...form, paymentDate: e.target.value })}
+              />
+            </label>
+            {form.paymentStatus === "Partially Paid" && (
+              <label className="sal-form-field">
+                <span>Paid Amount (AFN)</span>
+                <input
+                  type="number" value={form.paidAmount || 0} disabled={isView} min={0} max={form.amount}
+                  onChange={(e) => setForm({ ...form, paidAmount: Number(e.target.value) })}
+                />
+              </label>
+            )}
+            <label className="sal-form-field sal-field-span">
+              <span>Notes</span>
+              <textarea
+                value={form.notes || ""} disabled={isView} rows={3}
+                placeholder="Optional payment notes or remarks…"
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
+            </label>
+          </div>
 
-          <label style={{ gridColumn: "1 / -1" }}>
-            Notes
-            <textarea
-              value={formData.notes || ""}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-              disabled={isView}
-            />
-          </label>
-
-          {isView && formData.history && formData.history.length > 0 && (
-            <div style={{ gridColumn: "1 / -1" }}>
-              <h3 style={{ fontSize: "14px", marginBottom: "12px" }}>
-                Payment History
-              </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {formData.history.map((h, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      padding: "12px",
-                      background: "#f8fafc",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <strong>{h.action}</strong>
-                      <span style={{ color: "#64748b" }}>{h.date}</span>
-                    </div>
-                    {h.amount && (
-                      <div style={{ marginTop: "4px", color: "#16a34a" }}>
-                        Amount: {h.amount.toLocaleString()} AFN
+          {/* Payment History */}
+          {isView && form.history && form.history.length > 0 && (
+            <div className="sal-modal-history">
+              <h3 className="sal-modal-history-title">Payment History</h3>
+              <div className="sal-history-list">
+                {form.history.map((h, i) => (
+                  <div key={i} className="sal-history-item">
+                    <div className="sal-history-dot" />
+                    <div className="sal-history-body">
+                      <div className="sal-history-row">
+                        <strong>{h.action}</strong>
+                        <time>{h.date}</time>
                       </div>
-                    )}
-                    {h.note && (
-                      <div style={{ marginTop: "4px", color: "#64748b" }}>
-                        {h.note}
-                      </div>
-                    )}
-                    <div style={{ marginTop: "4px", fontSize: "11px", color: "#94a3b8" }}>
-                      By: {h.actor}
+                      {h.amount != null && (
+                        <div className="sal-history-amount">{fmt(h.amount)}</div>
+                      )}
+                      {h.note && <p className="sal-history-note">{h.note}</p>}
+                      <small className="sal-history-actor">By {h.actor}</small>
                     </div>
                   </div>
                 ))}
@@ -346,14 +300,14 @@ function SalaryDialog({
             </div>
           )}
 
-          <div className="dialog-actions" style={{ gridColumn: "1 / -1" }}>
+          <div className="sal-modal-actions">
             <button type="button" className="button button-secondary" onClick={onClose}>
               {isView ? "Close" : "Cancel"}
             </button>
             {!isView && (
               <button type="submit" className="button button-primary">
                 <DollarSign size={14} />
-                {mode === "add" ? "Add Salary" : "Save Changes"}
+                {mode === "add" ? "Add Salary Record" : "Save Changes"}
               </button>
             )}
           </div>
@@ -363,6 +317,7 @@ function SalaryDialog({
   );
 }
 
+/* ══ Main Page ════════════════════════════════════════════ */
 export function SalariesPage({
   projects,
   onNotify,
@@ -370,75 +325,54 @@ export function SalariesPage({
   projects: Project[];
   onNotify: (message: string) => void;
 }) {
-  const [salaries, setSalaries] = useState<Salary[]>(mockSalaries);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [salaries, setSalaries]         = useState<Salary[]>(mockSalaries);
+  const [query, setQuery]               = useState("");
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | "All">("All");
-  const [selectedSalary, setSelectedSalary] = useState<Salary | null>(null);
-  const [dialogMode, setDialogMode] = useState<"add" | "edit" | "view" | null>(null);
+  const [selected, setSelected]         = useState<Salary | null>(null);
+  const [mode, setMode]                 = useState<"add" | "edit" | "view" | null>(null);
 
-  const filteredSalaries = useMemo(() => {
-    return salaries.filter((salary) => {
-      const matchesSearch =
-        salary.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        salary.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        salary.project.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        salary.role.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "All" || salary.paymentStatus === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [salaries, searchQuery, statusFilter]);
+  const filtered = useMemo(() =>
+    salaries.filter((s) => {
+      const q = query.toLowerCase();
+      return (
+        (s.employeeName.toLowerCase().includes(q) ||
+          s.id.toLowerCase().includes(q) ||
+          s.project.toLowerCase().includes(q) ||
+          s.role.toLowerCase().includes(q)) &&
+        (statusFilter === "All" || s.paymentStatus === statusFilter)
+      );
+    }),
+    [salaries, query, statusFilter]
+  );
 
   const stats = useMemo(() => {
-    const total = salaries.reduce((sum, s) => sum + s.amount, 0);
-    const paid = salaries
-      .filter((s) => s.paymentStatus === "Paid")
-      .reduce((sum, s) => sum + s.amount, 0);
-    const unpaid = salaries
-      .filter((s) => s.paymentStatus === "Unpaid")
-      .reduce((sum, s) => sum + s.amount, 0);
-    const partial = salaries
-      .filter((s) => s.paymentStatus === "Partially Paid")
-      .reduce((sum, s) => sum + (s.paidAmount || 0), 0);
-
-    return {
-      total,
-      paid,
-      unpaid,
-      partial,
-      count: salaries.length,
-      paidCount: salaries.filter((s) => s.paymentStatus === "Paid").length,
-      unpaidCount: salaries.filter((s) => s.paymentStatus === "Unpaid").length,
-      partialCount: salaries.filter((s) => s.paymentStatus === "Partially Paid")
-        .length,
-    };
+    const total        = salaries.reduce((a, s) => a + s.amount, 0);
+    const paid         = salaries.filter((s) => s.paymentStatus === "Paid").reduce((a, s) => a + s.amount, 0);
+    const unpaid       = salaries.filter((s) => s.paymentStatus === "Unpaid").reduce((a, s) => a + s.amount, 0);
+    const partial      = salaries.filter((s) => s.paymentStatus === "Partially Paid").reduce((a, s) => a + (s.paidAmount || 0), 0);
+    const paidCount    = salaries.filter((s) => s.paymentStatus === "Paid").length;
+    const unpaidCount  = salaries.filter((s) => s.paymentStatus === "Unpaid").length;
+    const partialCount = salaries.filter((s) => s.paymentStatus === "Partially Paid").length;
+    const paidPct      = total > 0 ? Math.round((paid / total) * 100) : 0;
+    return { total, paid, unpaid, partial, paidCount, unpaidCount, partialCount, paidPct };
   }, [salaries]);
 
-  const handleSave = (salary: Salary) => {
-    if (dialogMode === "add") {
-      setSalaries([...salaries, salary]);
+  function handleSave(salary: Salary) {
+    if (mode === "add") {
+      setSalaries((p) => [...p, salary]);
       onNotify(`Salary record ${salary.id} added successfully`);
     } else {
-      setSalaries(salaries.map((s) => (s.id === salary.id ? salary : s)));
+      setSalaries((p) => p.map((s) => (s.id === salary.id ? salary : s)));
       onNotify(`Salary record ${salary.id} updated successfully`);
     }
-    setDialogMode(null);
-    setSelectedSalary(null);
-  };
+    setMode(null);
+    setSelected(null);
+  }
 
-  const formatCurrency = (amount: number) => {
-    return `${amount.toLocaleString()} AFN`;
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
+  function openView(s: Salary)  { setSelected(s); setMode("view"); }
+  function openEdit(s: Salary)  { setSelected(s); setMode("edit"); }
+  function openAdd()            { setSelected(null); setMode("add"); }
+  function closeDialog()        { setMode(null); setSelected(null); }
 
   return (
     <>
@@ -446,72 +380,114 @@ export function SalariesPage({
         eyebrow="FINANCE / SALARIES"
         title="Employee Salaries"
         copy="Manage project-based employee salary payments and track payment history."
+        action="Add Salary"
+        onAction={openAdd}
       />
 
-      {/* Summary Stats */}
-      <div className="invoice-summary-grid" style={{ marginBottom: "20px" }}>
-        <div className="invoice-summary-card">
-          <span>Total Salaries</span>
-          <strong>{formatCurrency(stats.total)}</strong>
+      {/* ── KPI cards ──────────────────────────────────────── */}
+      <div className="sal-kpi-grid">
+        <div className="sal-kpi-card">
+          <div className="sal-kpi-icon sal-kpi-icon-blue">
+            <Banknote size={18} />
+          </div>
+          <div className="sal-kpi-body">
+            <span className="sal-kpi-label">Total Payroll</span>
+            <strong className="sal-kpi-value">{fmt(stats.total)}</strong>
+            <small className="sal-kpi-sub">{salaries.length} records</small>
+          </div>
         </div>
-        <div className="invoice-summary-card paid">
-          <span>Paid ({stats.paidCount})</span>
-          <strong>{formatCurrency(stats.paid)}</strong>
+
+        <div className="sal-kpi-card">
+          <div className="sal-kpi-icon sal-kpi-icon-green">
+            <CheckCircle2 size={18} />
+          </div>
+          <div className="sal-kpi-body">
+            <span className="sal-kpi-label">Paid</span>
+            <strong className="sal-kpi-value sal-kpi-green">{fmt(stats.paid)}</strong>
+            <small className="sal-kpi-sub">{stats.paidCount} employee{stats.paidCount !== 1 ? "s" : ""}</small>
+          </div>
         </div>
-        <div className="invoice-summary-card pending">
-          <span>Unpaid ({stats.unpaidCount})</span>
-          <strong>{formatCurrency(stats.unpaid)}</strong>
+
+        <div className="sal-kpi-card">
+          <div className="sal-kpi-icon sal-kpi-icon-red">
+            <Clock size={18} />
+          </div>
+          <div className="sal-kpi-body">
+            <span className="sal-kpi-label">Unpaid</span>
+            <strong className="sal-kpi-value sal-kpi-red">{fmt(stats.unpaid)}</strong>
+            <small className="sal-kpi-sub">{stats.unpaidCount} pending</small>
+          </div>
         </div>
-        <div className="invoice-summary-card revision">
-          <span>Partial ({stats.partialCount})</span>
-          <strong>{formatCurrency(stats.partial)}</strong>
+
+        <div className="sal-kpi-card">
+          <div className="sal-kpi-icon sal-kpi-icon-amber">
+            <TrendingUp size={18} />
+          </div>
+          <div className="sal-kpi-body">
+            <span className="sal-kpi-label">Partially Paid</span>
+            <strong className="sal-kpi-value sal-kpi-amber">{fmt(stats.partial)}</strong>
+            <small className="sal-kpi-sub">{stats.partialCount} in progress</small>
+          </div>
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="invoice-toolbar">
-        <div className="invoice-search-toolbar">
-          <label className="invoice-search inline-search">
-            <Search size={15} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search salaries..."
-            />
-          </label>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | "All")}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #e2e8f0",
-              borderRadius: "7px",
-              fontSize: "13px",
-            }}
-          >
-            <option value="All">All Status</option>
-            <option value="Paid">Paid</option>
-            <option value="Partially Paid">Partially Paid</option>
-            <option value="Unpaid">Unpaid</option>
-          </select>
+      {/* ── Payment progress bar ───────────────────────────── */}
+      <div className="sal-progress-panel">
+        <div className="sal-progress-panel-head">
+          <span>Overall payment completion</span>
+          <strong>{stats.paidPct}%</strong>
         </div>
-        <button
-          className="button button-primary"
-          onClick={() => {
-            setSelectedSalary(null);
-            setDialogMode("add");
-          }}
-        >
-          <Plus size={14} />
-          Add Salary
-        </button>
+        <div className="sal-progress-track sal-progress-track-lg">
+          <div
+            className="sal-progress-fill sal-progress-fill-green"
+            style={{ width: `${stats.paidPct}%` }}
+          />
+        </div>
+        <div className="sal-progress-panel-legend">
+          <span><i className="sal-dot sal-dot-green" />Paid ({stats.paidCount})</span>
+          <span><i className="sal-dot sal-dot-amber" />Partial ({stats.partialCount})</span>
+          <span><i className="sal-dot sal-dot-red"   />Unpaid ({stats.unpaidCount})</span>
+        </div>
       </div>
 
-      {/* Salaries Table */}
-      <div className="panel invoice-table-panel">
+      {/* ── Toolbar ────────────────────────────────────────── */}
+      <div className="sal-toolbar">
+        <label className="sal-search">
+          <Search size={14} />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by employee, project, or role…"
+          />
+          {query && (
+            <button onClick={() => setQuery("")} aria-label="Clear search">
+              <X size={13} />
+            </button>
+          )}
+        </label>
+
+        <div className="sal-filter-tabs">
+          {(["All", "Paid", "Partially Paid", "Unpaid"] as const).map((s) => (
+            <button
+              key={s}
+              className={`sal-filter-tab ${statusFilter === s ? "active" : ""}`}
+              onClick={() => setStatusFilter(s as PaymentStatus | "All")}
+            >
+              {s}
+              {s !== "All" && (
+                <span className="sal-filter-count">
+                  {s === "Paid" ? stats.paidCount : s === "Unpaid" ? stats.unpaidCount : stats.partialCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Table ──────────────────────────────────────────── */}
+      <div className="panel sal-table-panel">
         <div className="table-wrap">
-          <table className="invoice-table">
+          <table className="sal-table">
             <thead>
               <tr>
                 <th>Salary ID</th>
@@ -525,118 +501,128 @@ export function SalariesPage({
               </tr>
             </thead>
             <tbody>
-              {filteredSalaries.map((salary) => (
-                <tr key={salary.id}>
-                  <td>
-                    <span
-                      className="invoice-link"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        setSelectedSalary(salary);
-                        setDialogMode("view");
-                      }}
-                    >
-                      <DollarSign size={14} />
-                      {salary.id}
-                    </span>
-                  </td>
-                  <td>
-                    <div>
-                      <strong style={{ fontSize: "12px" }}>
-                        {salary.employeeName}
-                      </strong>
-                      <div style={{ fontSize: "11px", color: "#94a3b8" }}>
-                        {salary.employeeId}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ maxWidth: "200px" }}>
-                      <strong style={{ fontSize: "12px" }}>{salary.project}</strong>
-                      <div style={{ fontSize: "11px", color: "#94a3b8" }}>
-                        {salary.projectId}
-                      </div>
-                    </div>
-                  </td>
-                  <td>{salary.role}</td>
-                  <td className="invoice-amount">{formatCurrency(salary.amount)}</td>
-                  <td>
-                    <span
-                      className={`status-pill ${salary.paymentStatus
-                        .toLowerCase()
-                        .replace(" ", "-")}`}
-                    >
-                      {salary.paymentStatus}
-                    </span>
-                    {salary.paymentStatus === "Partially Paid" && (
-                      <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
-                        Paid: {formatCurrency(salary.paidAmount || 0)}
-                      </div>
-                    )}
-                  </td>
-                  <td>{formatDate(salary.paymentDate)}</td>
-                  <td>
-                    <div className="invoice-actions">
-                      <button
-                        className="invoice-action-button"
-                        style={{
-                          background: "#f0f6ff",
-                          color: "#1d4ed8",
-                        }}
-                        onClick={() => {
-                          setSelectedSalary(salary);
-                          setDialogMode("view");
-                        }}
-                      >
-                        <Eye size={12} />
-                      </button>
-                      <button
-                        className="invoice-action-button"
-                        style={{
-                          background: "#fff7ed",
-                          color: "#ea580c",
-                        }}
-                        onClick={() => {
-                          setSelectedSalary(salary);
-                          setDialogMode("edit");
-                        }}
-                      >
-                        <Edit2 size={12} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredSalaries.length === 0 && (
+              {filtered.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={8}
-                    style={{
-                      textAlign: "center",
-                      padding: "40px",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    No salary records found
+                  <td colSpan={8}>
+                    <div className="sal-empty">
+                      <FileText size={30} />
+                      <h3>No salary records found</h3>
+                      <p>Try adjusting your search or filter.</p>
+                    </div>
                   </td>
                 </tr>
               )}
+
+              {filtered.map((s) => {
+                const paidPct = s.amount > 0 ? Math.round(((s.paidAmount || 0) / s.amount) * 100) : 0;
+                return (
+                  <tr key={s.id} className="sal-row">
+                    {/* ID */}
+                    <td>
+                      <button className="sal-id-btn" onClick={() => openView(s)}>
+                        <span className="sal-id-icon"><DollarSign size={11} /></span>
+                        {s.id}
+                        <ChevronRight size={11} className="sal-id-chevron" />
+                      </button>
+                    </td>
+
+                    {/* Employee */}
+                    <td>
+                      <div className="sal-employee-cell">
+                        <div className="sal-avatar">
+                          {s.employeeName.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <strong>{s.employeeName}</strong>
+                          <small>{s.employeeId}</small>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Project */}
+                    <td>
+                      <div className="sal-project-cell">
+                        <strong>{s.project}</strong>
+                        <small>{s.projectId}</small>
+                      </div>
+                    </td>
+
+                    {/* Role */}
+                    <td>
+                      <span className="sal-role">{s.role}</span>
+                    </td>
+
+                    {/* Amount */}
+                    <td>
+                      <span className="sal-amount">{fmt(s.amount)}</span>
+                    </td>
+
+                    {/* Status */}
+                    <td>
+                      <div className="sal-status-cell">
+                        <StatusPill status={s.paymentStatus} />
+                        {s.paymentStatus === "Partially Paid" && (
+                          <div className="sal-partial-detail">
+                            <div className="sal-progress-track sal-progress-track-sm">
+                              <div
+                                className="sal-progress-fill"
+                                style={{ width: `${paidPct}%`, background: "#d97706" }}
+                              />
+                            </div>
+                            <small>{fmt(s.paidAmount || 0)} of {fmt(s.amount)}</small>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Date */}
+                    <td>
+                      <span className="sal-date">{fmtDate(s.paymentDate)}</span>
+                    </td>
+
+                    {/* Actions */}
+                    <td>
+                      <div className="sal-row-actions">
+                        <button
+                          className="sal-action-btn sal-action-view"
+                          title="View details"
+                          onClick={() => openView(s)}
+                        >
+                          <Eye size={13} />
+                        </button>
+                        <button
+                          className="sal-action-btn sal-action-edit"
+                          title="Edit record"
+                          onClick={() => openEdit(s)}
+                        >
+                          <Edit2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+
+        {filtered.length > 0 && (
+          <div className="sal-table-footer">
+            <span>Showing {filtered.length} of {salaries.length} records</span>
+            <span className="sal-table-footer-total">
+              Total: <strong>{fmt(filtered.reduce((a, s) => a + s.amount, 0))}</strong>
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Dialog */}
-      {dialogMode && (
+      {mode && (
         <SalaryDialog
-          salary={selectedSalary}
+          salary={selected}
           projects={projects}
-          onClose={() => {
-            setDialogMode(null);
-            setSelectedSalary(null);
-          }}
+          onClose={closeDialog}
           onSave={handleSave}
-          mode={dialogMode}
+          mode={mode}
         />
       )}
     </>

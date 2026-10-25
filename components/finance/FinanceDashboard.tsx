@@ -36,7 +36,12 @@ import {
   YAxis,
 } from "recharts";
 import { Expense, Invoice, Payment, Project, Quotation } from "../../lib/types";
-import { invoiceSeed, paymentSeed, projectsSeed, quotationSeed } from "../../lib/dummy-data/mock-data";
+import {
+  invoiceSeed,
+  paymentSeed,
+  projectsSeed,
+  quotationSeed,
+} from "../../lib/dummy-data/mock-data";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -63,12 +68,16 @@ const today = () =>
 // ─── static mock data ────────────────────────────────────────────────────────
 
 const monthlyRevenue = [
-  { month: "May", revenue: 62400, expenses: 28100 },
-  { month: "Jun", revenue: 74800, expenses: 31600 },
-  { month: "Jul", revenue: 68200, expenses: 29400 },
-  { month: "Aug", revenue: 81500, expenses: 34200 },
-  { month: "Sep", revenue: 88000, expenses: 37800 },
-  { month: "Oct", revenue: 95400, expenses: 41200 },
+  { month: "May", revenue: 10000, expenses: 34009 },
+  { month: "Jun", revenue: 10000, expenses: 50000 },
+  { month: "Jul", revenue: 20000, expenses: 67000 },
+  { month: "Aug", revenue: 39000, expenses: 34200 },
+  { month: "Sep", revenue: 45000, expenses: 37800 },
+  { month: "Oct", revenue: 15000, expenses: 41200 },
+  {month: "Nov", revenue: 0, expenses: 0},
+  {month: "Dec", revenue: 0, expenses: 0},
+  {month: "Jan", revenue: 0, expenses: 0},
+  {month: "Feb", revenue: 0, expenses: 0},
 ];
 
 const recentTransactions: {
@@ -156,7 +165,7 @@ const statusPillClass = (status: string) =>
     Unpaid: "rejected",
     "Partially Paid": "pending-approval",
     "Not issued": "draft",
-  }[status] ?? "draft");
+  })[status] ?? "draft";
 
 // ─── Quick-action dialog ─────────────────────────────────────────────────────
 
@@ -177,7 +186,11 @@ function QuickActionDialog({
             <span className="eyebrow">QUICK ACTION</span>
             <h2>{title}</h2>
           </div>
-          <button className="icon-button" onClick={onClose} aria-label="Close dialog">
+          <button
+            className="icon-button"
+            onClick={onClose}
+            aria-label="Close dialog"
+          >
             <X size={18} />
           </button>
         </div>
@@ -239,7 +252,9 @@ export function FinanceDashboard({
   const [invoices] = useState<Invoice[]>(invoiceSeed);
   const [payments] = useState<Payment[]>(paymentSeed);
   const [txnSearch, setTxnSearch] = useState("");
-  const [txnType, setTxnType] = useState<"All" | "Invoice" | "Payment" | "Quotation" | "Expense">("All");
+  const [txnType, setTxnType] = useState<
+    "All" | "Invoice" | "Payment" | "Quotation" | "Expense"
+  >("All");
   const [quickAction, setQuickAction] = useState<
     "quotation" | "invoice" | "payment" | "expense" | null
   >(null);
@@ -247,14 +262,18 @@ export function FinanceDashboard({
   // ─── derived metrics ───────────────────────────────────────────────────────
 
   const totalRevenue = useMemo(
-    () => invoices.filter((inv) => inv.status === "Approved").reduce((s, inv) => s + inv.amount, 0),
+    () =>
+      invoices
+        .filter((inv) => inv.status === "Approved")
+        .reduce((s, inv) => s + inv.amount, 0),
     [invoices],
   );
 
   const pendingPayments = useMemo(() => {
     const approved = invoices.filter((inv) => inv.status === "Approved");
     return approved.reduce((s, inv) => {
-      const paid = payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
+      const paid =
+        payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
       return s + Math.max(0, inv.amount - paid);
     }, 0);
   }, [invoices, payments]);
@@ -262,7 +281,8 @@ export function FinanceDashboard({
   const paidInvoicesCount = useMemo(
     () =>
       invoices.filter((inv) => {
-        const paid = payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
+        const paid =
+          payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
         return paid >= inv.amount && inv.amount > 0;
       }).length,
     [invoices, payments],
@@ -277,7 +297,8 @@ export function FinanceDashboard({
       partial = 0,
       unpaid = 0;
     approved.forEach((inv) => {
-      const amtPaid = payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
+      const amtPaid =
+        payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
       if (amtPaid >= inv.amount) paid++;
       else if (amtPaid > 0) partial++;
       else unpaid++;
@@ -291,17 +312,31 @@ export function FinanceDashboard({
 
   // quotation status breakdown for bar chart
   const quotationBreakdown = [
-    { status: "Approved", count: quotations.filter((q) => q.status === "Approved").length },
-    { status: "Pending", count: quotations.filter((q) => q.status === "Pending approval").length },
-    { status: "Rejected", count: quotations.filter((q) => q.status === "Rejected").length },
-    { status: "Draft", count: quotations.filter((q) => q.status === "Draft").length },
+    {
+      status: "Approved",
+      count: quotations.filter((q) => q.status === "Approved").length,
+    },
+    {
+      status: "Pending",
+      count: quotations.filter((q) => q.status === "Pending approval").length,
+    },
+    {
+      status: "Rejected",
+      count: quotations.filter((q) => q.status === "Rejected").length,
+    },
+    {
+      status: "Draft",
+      count: quotations.filter((q) => q.status === "Draft").length,
+    },
   ];
 
   const filteredTxns = useMemo(
     () =>
       recentTransactions.filter((txn) => {
         const matchType = txnType === "All" || txn.type === txnType;
-        const matchSearch = `${txn.id} ${txn.project}`.toLowerCase().includes(txnSearch.toLowerCase());
+        const matchSearch = `${txn.id} ${txn.project}`
+          .toLowerCase()
+          .includes(txnSearch.toLowerCase());
         return matchType && matchSearch;
       }),
     [txnType, txnSearch],
@@ -314,13 +349,22 @@ export function FinanceDashboard({
         <div>
           <span className="eyebrow">FINANCE / OVERVIEW</span>
           <h1>Finance dashboard</h1>
-          <p>A unified view of revenue, invoices, payments, and expenses across all projects.</p>
+          <p>
+            A unified view of revenue, invoices, payments, and expenses across
+            all projects.
+          </p>
         </div>
         <div className="finance-dash-header-actions">
-          <button className="button button-secondary" onClick={() => setQuickAction("quotation")}>
+          <button
+            className="button button-secondary"
+            onClick={() => setQuickAction("quotation")}
+          >
             <FilePlus size={15} /> New quotation
           </button>
-          <button className="button button-primary" onClick={() => setQuickAction("invoice")}>
+          <button
+            className="button button-primary"
+            onClick={() => setQuickAction("invoice")}
+          >
             <Plus size={15} /> Generate invoice
           </button>
         </div>
@@ -371,7 +415,10 @@ export function FinanceDashboard({
             <TrendingUp size={17} />
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={monthlyRevenue} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <AreaChart
+              data={monthlyRevenue}
+              margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="gradRev" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#2563eb" stopOpacity={0.15} />
@@ -382,17 +429,48 @@ export function FinanceDashboard({
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#edf1f6" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#edf1f6"
+              />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tickFormatter={(v) => `$${v / 1000}k`} tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v: unknown) => typeof v === "number" ? usd(v) : String(v)} />
-              <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#2563eb" fill="url(#gradRev)" strokeWidth={2} />
-              <Area type="monotone" dataKey="expenses" name="Expenses" stroke="#f59e0b" fill="url(#gradExp)" strokeWidth={2} />
+              <YAxis
+                tickFormatter={(v) => `$${v / 1000}k`}
+                tick={{ fontSize: 11 }}
+              />
+              <Tooltip
+                formatter={(v: unknown) =>
+                  typeof v === "number" ? usd(v) : String(v)
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                name="Revenue"
+                stroke="#2563eb"
+                fill="url(#gradRev)"
+                strokeWidth={2}
+              />
+              <Area
+                type="monotone"
+                dataKey="expenses"
+                name="Expenses"
+                stroke="#f59e0b"
+                fill="url(#gradExp)"
+                strokeWidth={2}
+              />
             </AreaChart>
           </ResponsiveContainer>
           <div className="finance-chart-legend">
-            <span><i style={{ background: "#2563eb" }} />Revenue</span>
-            <span><i style={{ background: "#f59e0b" }} />Expenses</span>
+            <span>
+              <i style={{ background: "#2563eb" }} />
+              Revenue
+            </span>
+            <span>
+              <i style={{ background: "#f59e0b" }} />
+              Expenses
+            </span>
           </div>
         </article>
 
@@ -426,7 +504,10 @@ export function FinanceDashboard({
           <div className="finance-donut-legend">
             {paymentBreakdown.map((entry) => (
               <div key={entry.name}>
-                <span className="finance-legend-dot" style={{ background: entry.color }} />
+                <span
+                  className="finance-legend-dot"
+                  style={{ background: entry.color }}
+                />
                 <span>{entry.name}</span>
                 <strong>{entry.value}</strong>
               </div>
@@ -445,12 +526,38 @@ export function FinanceDashboard({
             <BadgeDollarSign size={17} />
           </div>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={expenseByCategory} layout="vertical" margin={{ left: 0, right: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#edf1f6" />
-              <XAxis type="number" tickFormatter={(v) => `$${v / 1000}k`} tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="category" width={108} tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v: unknown) => typeof v === "number" ? usd(v) : String(v)} />
-              <Bar dataKey="amount" name="Amount" fill="#6657d8" radius={[0, 3, 3, 0]} />
+            <BarChart
+              data={expenseByCategory}
+              layout="vertical"
+              margin={{ left: 0, right: 8 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                horizontal={false}
+                stroke="#edf1f6"
+              />
+              <XAxis
+                type="number"
+                tickFormatter={(v) => `$${v / 1000}k`}
+                tick={{ fontSize: 11 }}
+              />
+              <YAxis
+                type="category"
+                dataKey="category"
+                width={108}
+                tick={{ fontSize: 11 }}
+              />
+              <Tooltip
+                formatter={(v: unknown) =>
+                  typeof v === "number" ? usd(v) : String(v)
+                }
+              />
+              <Bar
+                dataKey="amount"
+                name="Amount"
+                fill="#6657d8"
+                radius={[0, 3, 3, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </article>
@@ -458,7 +565,6 @@ export function FinanceDashboard({
 
       {/* ── Middle sections row ── */}
       <div className="finance-dash-mid">
-
         {/* Project Quotations */}
         <article className="panel finance-dash-panel">
           <div className="panel-heading">
@@ -466,7 +572,10 @@ export function FinanceDashboard({
               <span className="eyebrow">QUOTATIONS</span>
               <h2>Project quotations</h2>
             </div>
-            <button className="text-button" onClick={() => onNavigate("Finance", "quotations")}>
+            <button
+              className="text-button"
+              onClick={() => onNavigate("Finance", "quotations")}
+            >
               View all <ArrowUpRight size={14} />
             </button>
           </div>
@@ -488,7 +597,9 @@ export function FinanceDashboard({
                     <strong>{q.id}</strong>
                     <small>{proj?.client ?? q.project}</small>
                   </div>
-                  <span className="finance-list-amount">{usdShort(q.amount)}</span>
+                  <span className="finance-list-amount">
+                    {usdShort(q.amount)}
+                  </span>
                   <Badge status={q.status} />
                 </div>
               );
@@ -509,7 +620,10 @@ export function FinanceDashboard({
               <span className="eyebrow">INVOICES</span>
               <h2>Invoice management</h2>
             </div>
-            <button className="text-button" onClick={() => onNavigate("Finance", "invoices")}>
+            <button
+              className="text-button"
+              onClick={() => onNavigate("Finance", "invoices")}
+            >
               View all <ArrowUpRight size={14} />
             </button>
           </div>
@@ -519,15 +633,21 @@ export function FinanceDashboard({
               <span>Total</span>
             </div>
             <div className="finance-mini-stat">
-              <strong>{invoices.filter((i) => i.status === "Pending approval").length}</strong>
+              <strong>
+                {invoices.filter((i) => i.status === "Pending approval").length}
+              </strong>
               <span>Pending</span>
             </div>
             <div className="finance-mini-stat">
-              <strong>{invoices.filter((i) => i.status === "Approved").length}</strong>
+              <strong>
+                {invoices.filter((i) => i.status === "Approved").length}
+              </strong>
               <span>Approved</span>
             </div>
             <div className="finance-mini-stat">
-              <strong>{invoices.filter((i) => i.status === "Rejected").length}</strong>
+              <strong>
+                {invoices.filter((i) => i.status === "Rejected").length}
+              </strong>
               <span>Rejected</span>
             </div>
           </div>
@@ -541,7 +661,9 @@ export function FinanceDashboard({
                     <strong>{inv.id}</strong>
                     <small>{proj?.client ?? inv.project}</small>
                   </div>
-                  <span className="finance-list-amount">{usdShort(inv.amount)}</span>
+                  <span className="finance-list-amount">
+                    {usdShort(inv.amount)}
+                  </span>
                   <Badge status={inv.status} />
                 </div>
               );
@@ -562,7 +684,10 @@ export function FinanceDashboard({
               <span className="eyebrow">PAYMENTS</span>
               <h2>Payment tracking</h2>
             </div>
-            <button className="text-button" onClick={() => onNavigate("Finance", "payments")}>
+            <button
+              className="text-button"
+              onClick={() => onNavigate("Finance", "payments")}
+            >
               View all <ArrowUpRight size={14} />
             </button>
           </div>
@@ -583,16 +708,21 @@ export function FinanceDashboard({
               .filter((inv) => inv.status === "Approved")
               .slice(0, 3)
               .map((inv) => {
-                const amtPaid = payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
+                const amtPaid =
+                  payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
                 const ps =
                   amtPaid >= inv.amount
                     ? "Paid"
                     : amtPaid > 0
-                    ? "Partially Paid"
-                    : "Unpaid";
-                const pct = inv.amount > 0 ? Math.round((amtPaid / inv.amount) * 100) : 0;
+                      ? "Partially Paid"
+                      : "Unpaid";
+                const pct =
+                  inv.amount > 0 ? Math.round((amtPaid / inv.amount) * 100) : 0;
                 return (
-                  <div key={inv.id} className="finance-list-row finance-payment-row">
+                  <div
+                    key={inv.id}
+                    className="finance-list-row finance-payment-row"
+                  >
                     <div className="finance-list-main">
                       <strong>{inv.id}</strong>
                       <small>{inv.project}</small>
@@ -628,7 +758,10 @@ export function FinanceDashboard({
               <span className="eyebrow">EXPENSES</span>
               <h2>Expense management</h2>
             </div>
-            <button className="text-button" onClick={() => onNavigate("Expenses")}>
+            <button
+              className="text-button"
+              onClick={() => onNavigate("Expenses")}
+            >
               View all <ArrowUpRight size={14} />
             </button>
           </div>
@@ -658,7 +791,9 @@ export function FinanceDashboard({
                   <strong>{item.category}</strong>
                   <small>Expense category</small>
                 </div>
-                <span className="finance-list-amount">{usdShort(item.amount)}</span>
+                <span className="finance-list-amount">
+                  {usdShort(item.amount)}
+                </span>
                 <div
                   className="finance-expense-bar-mini"
                   title={usd(item.amount)}
@@ -730,13 +865,17 @@ export function FinanceDashboard({
                   {txn.id}
                 </span>
                 <span>
-                  <span className={`finance-txn-type finance-txn-type-${txn.type.toLowerCase()}`}>
+                  <span
+                    className={`finance-txn-type finance-txn-type-${txn.type.toLowerCase()}`}
+                  >
                     {txn.type}
                   </span>
                 </span>
                 <span className="finance-txn-project">{txn.project}</span>
                 <span className="finance-txn-date">{txn.date}</span>
-                <strong className="finance-txn-amount">{usd(txn.amount)}</strong>
+                <strong className="finance-txn-amount">
+                  {usd(txn.amount)}
+                </strong>
                 <Badge status={txn.status} />
               </div>
             ))}
@@ -815,25 +954,38 @@ export function FinanceDashboard({
 
             {/* Pending alerts */}
             <div className="finance-alert-section">
-              <span className="eyebrow" style={{ marginBottom: 8, display: "block" }}>ALERTS</span>
-              {invoices.filter((i) => i.status === "Pending approval").map((inv) => (
-                <div key={inv.id} className="finance-alert-item">
-                  <AlertCircle size={13} />
-                  <div>
-                    <strong>{inv.id} awaiting CEO</strong>
-                    <small>{usd(inv.amount)} · {inv.project.slice(0, 26)}</small>
+              <span
+                className="eyebrow"
+                style={{ marginBottom: 8, display: "block" }}
+              >
+                ALERTS
+              </span>
+              {invoices
+                .filter((i) => i.status === "Pending approval")
+                .map((inv) => (
+                  <div key={inv.id} className="finance-alert-item">
+                    <AlertCircle size={13} />
+                    <div>
+                      <strong>{inv.id} awaiting CEO</strong>
+                      <small>
+                        {usd(inv.amount)} · {inv.project.slice(0, 26)}
+                      </small>
+                    </div>
                   </div>
-                </div>
-              ))}
-              {quotations.filter((q) => q.status === "Pending approval").map((q) => (
-                <div key={q.id} className="finance-alert-item">
-                  <Clock size={13} />
-                  <div>
-                    <strong>{q.id} pending review</strong>
-                    <small>{usd(q.amount)} · {q.project.slice(0, 26)}</small>
+                ))}
+              {quotations
+                .filter((q) => q.status === "Pending approval")
+                .map((q) => (
+                  <div key={q.id} className="finance-alert-item">
+                    <Clock size={13} />
+                    <div>
+                      <strong>{q.id} pending review</strong>
+                      <small>
+                        {usd(q.amount)} · {q.project.slice(0, 26)}
+                      </small>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </article>
         </aside>
@@ -841,9 +993,13 @@ export function FinanceDashboard({
 
       {/* ── Quick action dialogs ── */}
       {quickAction === "quotation" && (
-        <QuickActionDialog title="Create quotation" onClose={() => setQuickAction(null)}>
+        <QuickActionDialog
+          title="Create quotation"
+          onClose={() => setQuickAction(null)}
+        >
           <p style={{ color: "#718096", fontSize: 13, marginBottom: 16 }}>
-            Select a project to generate a new quotation. You can edit all details in the Quotations workspace.
+            Select a project to generate a new quotation. You can edit all
+            details in the Quotations workspace.
           </p>
           <label className="invoice-submit-field">
             Project
@@ -856,7 +1012,10 @@ export function FinanceDashboard({
             </select>
           </label>
           <div className="dialog-actions">
-            <button className="button button-secondary" onClick={() => setQuickAction(null)}>
+            <button
+              className="button button-secondary"
+              onClick={() => setQuickAction(null)}
+            >
               Cancel
             </button>
             <button
@@ -874,9 +1033,13 @@ export function FinanceDashboard({
       )}
 
       {quickAction === "invoice" && (
-        <QuickActionDialog title="Generate invoice" onClose={() => setQuickAction(null)}>
+        <QuickActionDialog
+          title="Generate invoice"
+          onClose={() => setQuickAction(null)}
+        >
           <p style={{ color: "#718096", fontSize: 13, marginBottom: 16 }}>
-            Submit an invoice linked to an approved quotation. Full invoice builder is in the Invoices workspace.
+            Submit an invoice linked to an approved quotation. Full invoice
+            builder is in the Invoices workspace.
           </p>
           <label className="invoice-submit-field">
             Project
@@ -889,7 +1052,10 @@ export function FinanceDashboard({
             </select>
           </label>
           <div className="dialog-actions">
-            <button className="button button-secondary" onClick={() => setQuickAction(null)}>
+            <button
+              className="button button-secondary"
+              onClick={() => setQuickAction(null)}
+            >
               Cancel
             </button>
             <button
@@ -907,16 +1073,26 @@ export function FinanceDashboard({
       )}
 
       {quickAction === "payment" && (
-        <QuickActionDialog title="Record payment" onClose={() => setQuickAction(null)}>
+        <QuickActionDialog
+          title="Record payment"
+          onClose={() => setQuickAction(null)}
+        >
           <p style={{ color: "#718096", fontSize: 13, marginBottom: 16 }}>
-            Log a payment against an approved invoice. Full payment tracker is in the Payments workspace.
+            Log a payment against an approved invoice. Full payment tracker is
+            in the Payments workspace.
           </p>
           <div className="finance-list" style={{ marginBottom: 16 }}>
             {invoices
               .filter((inv) => inv.status === "Approved")
               .map((inv) => {
-                const amtPaid = payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
-                const ps = amtPaid >= inv.amount ? "Paid" : amtPaid > 0 ? "Partially Paid" : "Unpaid";
+                const amtPaid =
+                  payments.find((p) => p.invoiceId === inv.id)?.amountPaid ?? 0;
+                const ps =
+                  amtPaid >= inv.amount
+                    ? "Paid"
+                    : amtPaid > 0
+                      ? "Partially Paid"
+                      : "Unpaid";
                 return (
                   <div key={inv.id} className="finance-list-row">
                     <div className="finance-list-main">
@@ -930,7 +1106,10 @@ export function FinanceDashboard({
               })}
           </div>
           <div className="dialog-actions">
-            <button className="button button-secondary" onClick={() => setQuickAction(null)}>
+            <button
+              className="button button-secondary"
+              onClick={() => setQuickAction(null)}
+            >
               Cancel
             </button>
             <button
@@ -948,9 +1127,13 @@ export function FinanceDashboard({
       )}
 
       {quickAction === "expense" && (
-        <QuickActionDialog title="Add expense" onClose={() => setQuickAction(null)}>
+        <QuickActionDialog
+          title="Add expense"
+          onClose={() => setQuickAction(null)}
+        >
           <p style={{ color: "#718096", fontSize: 13, marginBottom: 16 }}>
-            Create and submit a new project expense. Full expense management is in the Expenses workspace.
+            Create and submit a new project expense. Full expense management is
+            in the Expenses workspace.
           </p>
           <label className="invoice-submit-field">
             Project
@@ -971,7 +1154,10 @@ export function FinanceDashboard({
             <input type="number" min="0" placeholder="0.00" />
           </label>
           <div className="dialog-actions">
-            <button className="button button-secondary" onClick={() => setQuickAction(null)}>
+            <button
+              className="button button-secondary"
+              onClick={() => setQuickAction(null)}
+            >
               Cancel
             </button>
             <button

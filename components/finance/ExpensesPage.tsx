@@ -224,13 +224,9 @@ function ExpenseDocument({
             alt="Chinar"
             className="exp-doc-logo"
           />
-          <div>
-            <strong>CHINAR</strong>
-            <span>MEDIA &amp; ENTERTAINMENT (PVT.) LTD.</span>
-          </div>
         </div>
         <div className="exp-doc-id-box">
-          <div className="exp-doc-id-title">Expense Report</div>
+          <div className="exp-doc-id-title">Expense Report </div>
           <div className="exp-doc-id-row">
             <span>No:</span>
             <strong>{expense.id}</strong>
@@ -273,7 +269,7 @@ function ExpenseDocument({
           <strong>{expense.paymentMethod}</strong>
         </div>
         <div className="exp-doc-term">
-          <span>Vendor / Payee</span>
+          <span>Vendor</span>
           <strong>{expense.vendor}</strong>
         </div>
         <div className="exp-doc-term exp-doc-term-last">
@@ -292,10 +288,10 @@ function ExpenseDocument({
         </colgroup>
         <thead>
           <tr>
-            <th>#</th>
+            <th>no</th>
             <th>Description</th>
             <th>Date</th>
-            <th>Amount (USD)</th>
+            <th>Amount </th>
           </tr>
         </thead>
         <tbody>
@@ -325,7 +321,7 @@ function ExpenseDocument({
       <div className="exp-doc-totals">
         <div className="exp-doc-totals-note">
           Note: All amounts are in USD. This expense report was prepared by the
-          Finance Department of Chinar Media &amp; Entertainment.
+          Finance Department of Chinar Media &amp; Consulting Service Co.
         </div>
         <div className="exp-doc-totals-right">
           <div className="exp-doc-total-row">
@@ -366,7 +362,6 @@ function ExpenseDocument({
 
       {/* Footer */}
       <div className="exp-doc-footer">
-        <strong>(Expense Report)</strong>
         <p>
           Add: House# 6, 3rd Street, Kolola Pushta, District 4, Kabul,
           Afghanistan.
@@ -437,7 +432,7 @@ function ExpensePreviewModal({
           </div>
           <div className="exp-preview-actions">
             <button className="button button-secondary" onClick={handlePrint}>
-              <Printer size={14} /> Print / Download PDF
+              <Printer size={14} /> DOWNLOAD PDF
             </button>
             <button
               className="icon-button"
@@ -743,18 +738,6 @@ function ExpenseDetails({
               Edit expense
             </button>
           )}
-          <button
-            className="button button-secondary"
-            onClick={() => setShowPreview(true)}
-          >
-            <Eye size={14} /> Preview document
-          </button>
-          <button
-            className="button button-primary"
-            onClick={() => setShowPreview(true)}
-          >
-            <Download size={14} /> Generate PDF
-          </button>
         </div>
       </div>
 

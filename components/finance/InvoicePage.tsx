@@ -105,10 +105,6 @@ function InvoiceDocument({
             alt="Chinar TV"
             className="inv-doc-logo"
           />
-          <div>
-            <strong>CHINAR</strong>
-            <span>MEDIA &amp; ENTERTAINMENT (PVT.) LTD.</span>
-          </div>
         </div>
         <div className="inv-doc-id-box">
           <div className="inv-doc-id-title">Invoice</div>
@@ -253,7 +249,6 @@ function InvoiceDocument({
 
       {/* ── Footer ── */}
       <div className="inv-doc-footer">
-        <strong>(Invoice)</strong>
         <p>
           Add: House# 6, 3rd Street, Kolola Pushta, District 4, Kabul,
           Afghanistan.
@@ -330,7 +325,7 @@ function InvoicePdfModal({
           </div>
           <div className="inv-pdf-toolbar-actions">
             <button className="button button-secondary" onClick={handlePrint}>
-              <Printer size={14} /> Print / Download PDF
+              <Printer size={14} /> DOWNLOAD PDF
             </button>
             <button
               className="icon-button"
@@ -577,12 +572,6 @@ function InvoiceDetails({
             onClick={() => window.print()}
           >
             <Printer size={14} /> Print
-          </button>
-          <button className="button button-secondary" onClick={onGeneratePdf}>
-            <Eye size={14} /> Preview PDF
-          </button>
-          <button className="button button-primary" onClick={onGeneratePdf}>
-            <Download size={14} /> Generate PDF
           </button>
         </div>
       </div>
