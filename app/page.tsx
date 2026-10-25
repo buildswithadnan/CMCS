@@ -1,33 +1,58 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Dashboard, Login } from "../components/ctms";
 
-type SessionUser = {
-  employeeId: string;
-  email: string;
-  password: string;
-  name: string;
-  firstName: string;
-  role: string;
-  department: string;
-};
+import { useState } from "react";
+import { Dashboard, Login } from "../components/ctms";
+import { AuthProvider, useAuth } from "../lib/context/AuthContext";
+
+function AppContent() {
+  const { user, logout, isLoading } = useAuth();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh',
+        fontSize: '18px',
+        color: '#666'
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  // If user is authenticated, show dashboard
+  if (user && loggedIn) {
+    return (
+      <Dashboard 
+        user={{
+          employeeId: user.employeeId,
+          email: user.email,
+          password: '', // Not needed anymore
+          name: user.name,
+          firstName: user.firstName,
+          role: user.role,
+          department: user.department,
+        }} 
+        onLogout={async () => {
+          await logout();
+          setLoggedIn(false);
+        }}
+      />
+    );
+  }
+
+  // Show login screen
+  return <Login onLogin={() => setLoggedIn(true)} />;
+}
+
 export default function Home() {
-  const [user, setUser] = useState<SessionUser | null>(null);
-  useEffect(() => {
-    const saved = localStorage.getItem("cmcsSession");
-    if (saved) setUser(JSON.parse(saved));
-  }, []);
-  function login(next: SessionUser) {
-    setUser(next);
-    localStorage.setItem("cmcsSession", JSON.stringify(next));
-  }
-  function logout() {
-    setUser(null);
-    localStorage.removeItem("cmcsSession");
-  }
-  return user ? (
-    <Dashboard user={user} onLogout={logout} />
-  ) : (
-    <Login onLogin={login} />
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

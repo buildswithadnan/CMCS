@@ -1,47 +1,30 @@
 "use client";
 
-import React, { FormEvent, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Building2, Check, ChevronDown, ShieldCheck } from "lucide-react";
-import { User } from "../../lib/types";
-import { loginDepartments, users } from "../../lib/dummy-data/mock-data";
+import React, { FormEvent, useState } from "react";
+import { ArrowUpRight, ShieldCheck } from "lucide-react";
+import { useAuth } from "../../lib/context/AuthContext";
 
-export function Login({ onLogin }: { onLogin: (u: User) => void }) {
-  const [department, setDepartment] = useState("");
-  const [identity, setIdentity] = useState("");
+export function Login({ onLogin }: { onLogin: () => void }) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [departmentOpen, setDepartmentOpen] = useState(false);
   const [error, setError] = useState("");
-  const departmentRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
 
-  useEffect(() => {
-    const closeDepartmentMenu = (event: MouseEvent) => {
-      if (!departmentRef.current?.contains(event.target as Node)) {
-        setDepartmentOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", closeDepartmentMenu);
-    return () => document.removeEventListener("mousedown", closeDepartmentMenu);
-  }, []);
-
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    const normalizedIdentity = identity.trim().toLowerCase();
-    const found = Object.values(users).find(
-      (u) =>
-        u.department === department &&
-        (u.email === normalizedIdentity ||
-          u.employeeId.toLowerCase() === normalizedIdentity),
-    );
-    if (!found || found.password !== password) {
-      setError(
-        department
-          ? `Those credentials do not match a ${department} account.`
-          : "Select your department to continue.",
-      );
-      return;
+    setError("");
+    setIsLoading(true);
+
+    try {
+      await login(email, password);
+      onLogin(); // Navigate to dashboard
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
-    onLogin(found);
   }
 
   return (
@@ -60,9 +43,9 @@ export function Login({ onLogin }: { onLogin: (u: User) => void }) {
           </p>
         </div>
         <div className="auth-hero-foot">
-          <span>Six departments</span>
+          <span>Real-time authentication</span>
           <span>•</span>
-          <span>One source of truth</span>
+          <span>Secure workspace access</span>
         </div>
       </div>
       <div className="auth-form-panel">
@@ -74,52 +57,22 @@ export function Login({ onLogin }: { onLogin: (u: User) => void }) {
           </div>
           <form className="auth-form" onSubmit={submit}>
             <label>
-              Department
-              <div className={`department-field ${departmentOpen ? "is-open" : ""}`} ref={departmentRef}>
-                <Building2 size={16} aria-hidden="true" />
-                <button
-                  type="button"
-                  className={`department-trigger ${department ? "has-value" : ""}`}
-                  aria-haspopup="listbox"
-                  aria-expanded={departmentOpen}
-                  onClick={() => setDepartmentOpen((open) => !open)}
-                >
-                  {department || "Select your department"}
-                </button>
-                <ChevronDown className="department-chevron" size={15} aria-hidden="true" />
-                {departmentOpen && <div className="department-menu" role="listbox" aria-label="Select your department">
-                  {loginDepartments.map((item) => <button
-                    type="button"
-                    className={`department-option ${department === item ? "is-selected" : ""}`}
-                    role="option"
-                    aria-selected={department === item}
-                    key={item}
-                    onClick={() => {
-                      setDepartment(item);
-                      setDepartmentOpen(false);
-                      setError("");
-                    }}
-                  >
-                    <span>{item}</span>
-                    {department === item && <Check size={14} />}
-                  </button>)}
-                </div>}
-              </div>
-              <span className="auth-field-help">
-                Use the workspace assigned to your department.
-              </span>
-            </label>
-            <label>
-              Employee ID or email
+              Email address
               <input
                 required
-                value={identity}
+                type="email"
+                value={email}
                 onChange={(e) => {
-                  setIdentity(e.target.value);
+                  setEmail(e.target.value);
                   setError("");
                 }}
                 placeholder="you@chinar.tv"
+                disabled={isLoading}
+                autoFocus
               />
+              <span className="auth-field-help">
+                Use your CMCS employee email address.
+              </span>
             </label>
             <label>
               Password
@@ -133,21 +86,32 @@ export function Login({ onLogin }: { onLogin: (u: User) => void }) {
                     setError("");
                   }}
                   placeholder="Enter password"
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   className="password-toggle"
                   onClick={() => setShow(!show)}
+                  disabled={isLoading}
                 >
                   {show ? "Hide" : "Show"}
                 </button>
               </div>
             </label>
             {error && <p className="auth-error">{error}</p>}
-            <button className="auth-submit" type="submit">
-              Sign in <ArrowUpRight size={16} />
+            <button className="auth-submit" type="submit" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign in"} <ArrowUpRight size={16} />
             </button>
           </form>
+          <div className="auth-demo-hint">
+            <p><strong>Test Accounts (Password: ChinarCEO@2026)</strong></p>
+            <small>CEO: ceo@chinar.tv</small>
+            <small>Operations: hoo@chinar.tv</small>
+            <small>Finance: finance@chinar.tv</small>
+            <small>Technical: technical@chinar.tv</small>
+            <small>Production: production@chinar.tv</small>
+            <small>Admin: admin@chinar.tv</small>
+          </div>
           <p className="auth-authorized">
             <ShieldCheck size={13} /> Authorized CMCS personnel only
           </p>

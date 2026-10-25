@@ -20820,3 +20820,27 @@ button {
 @media (max-width: 420px) {
   .sal-kpi-grid { grid-template-columns: 1fr; }
 }
+
+
+/* Demo hint styles for login */
+.auth-demo-hint {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}
+
+.auth-demo-hint p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #166534;
+}
+
+.auth-demo-hint small {
+  display: block;
+  font-size: 13px;
+  color: #15803d;
+  margin: 4px 0;
+  font-family: 'Courier New', monospace;
+}

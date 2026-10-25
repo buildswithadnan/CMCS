@@ -1,0 +1,49 @@
+# Test Login API
+# Use with REST Client VS Code extension or curl
+
+### Login as CEO
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ceo@demo.chinar.tv",
+  "password": "ChinarCEO@2026"
+}
+
+### Login as HOO
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "hoo@demo.chinar.tv",
+  "password": "ChinarCEO@2026"
+}
+
+### Login as Finance
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "finance@demo.chinar.tv",
+  "password": "ChinarCEO@2026"
+}
+
+### Get Current User (replace TOKEN with access token from login)
+GET http://localhost:3000/api/auth/me
+Authorization: Bearer TOKEN
+
+### Refresh Token (replace REFRESH_TOKEN with refresh token from login)
+POST http://localhost:3000/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "REFRESH_TOKEN"
+}
+
+### Logout (replace REFRESH_TOKEN with refresh token from login)
+POST http://localhost:3000/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "REFRESH_TOKEN"
+}
