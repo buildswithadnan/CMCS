@@ -104,7 +104,7 @@ export function Login({ onLogin }: { onLogin: () => void }) {
             </button>
           </form>
           <div className="auth-demo-hint">
-            <p><strong>Test Accounts (Password: ChinarCEO@2026)</strong></p>
+            <p><strong>Test Credentials (Password: ChinarCEO@2026)</strong></p>
             <small>CEO: ceo@chinar.tv</small>
             <small>Operations: hoo@chinar.tv</small>
             <small>Finance: finance@chinar.tv</small>

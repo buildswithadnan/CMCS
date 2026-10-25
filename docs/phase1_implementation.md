@@ -64,19 +64,19 @@ JWT_REFRESH_EXPIRY=7d
 6. **user_sessions** - Refresh token storage
 7. **audit_logs** - Security and action logging
 
-## Demo Accounts
+## Test Accounts
 
 | Email | Role | Password |
 |-------|------|----------|
-| ceo@demo.chinar.tv | CEO / Founder Manager | ChinarCEO@2026 |
-| hoo@demo.chinar.tv | Head of Operations | ChinarCEO@2026 |
-| finance@demo.chinar.tv | Finance Officer | ChinarCEO@2026 |
-| technical@demo.chinar.tv | Technical Employee | ChinarCEO@2026 |
-| production@demo.chinar.tv | Production Manager | ChinarCEO@2026 |
-| hr@demo.chinar.tv | HR Manager | ChinarCEO@2026 |
-| admin@demo.chinar.tv | System Administrator | ChinarCEO@2026 |
-| admin.employee@demo.chinar.tv | Administration Employee | ChinarCEO@2026 |
-| employee@demo.chinar.tv | Employee | ChinarCEO@2026 |
+| ceo@chinar.tv | CEO / Founder Manager | ChinarCEO@2026 |
+| hoo@chinar.tv | Head of Operations | ChinarCEO@2026 |
+| finance@chinar.tv | Finance Officer | ChinarCEO@2026 |
+| technical@chinar.tv | Technical Employee | ChinarCEO@2026 |
+| production@chinar.tv | Production Manager | ChinarCEO@2026 |
+| hr@chinar.tv | HR Manager | ChinarCEO@2026 |
+| admin@chinar.tv | System Administrator | ChinarCEO@2026 |
+| admin.employee@chinar.tv | Administration Employee | ChinarCEO@2026 |
+| employee@chinar.tv | Employee | ChinarCEO@2026 |
 
 ## NPM Scripts Added
 
@@ -191,7 +191,7 @@ Invoke-RestMethod -Uri 'http://localhost:3000/api/auth/logout' -Method POST -Bod
 
 3. **Login**:
    - Open http://localhost:3000
-   - Use any demo account email
+   - Use any test account email (e.g., ceo@chinar.tv)
    - Password: `ChinarCEO@2026`
 
 ## File Structure

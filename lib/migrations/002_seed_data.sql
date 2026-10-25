@@ -178,7 +178,7 @@ ON CONFLICT DO NOTHING;
 -- NOTE: These passwords should be changed on first login in production!
 -- ============================================================================
 
--- Password hash for all demo accounts (password: ChinarCEO@2026)
+-- Password hash for all test accounts (password: ChinarCEO@2026)
 -- Generated with: bcrypt.hash('ChinarCEO@2026', 10)
 DO $$
 DECLARE

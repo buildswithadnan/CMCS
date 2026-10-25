@@ -1621,7 +1621,7 @@ INSERT INTO users (employee_id, email, password_hash, first_name, last_name,
                    role_id, department_id, joining_date, status)
 SELECT 
   'CHN-ADM-001',
-  'admin@demo.chinar.tv',
+  'admin@chinar.tv',
   '$2b$10$...', -- bcrypt hash
   'Mohammad',
   'Wali',

@@ -6,7 +6,7 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "ceo@demo.chinar.tv",
+  "email": "ceo@chinar.tv",
   "password": "ChinarCEO@2026"
 }
 
@@ -15,7 +15,7 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "hoo@demo.chinar.tv",
+  "email": "hoo@chinar.tv",
   "password": "ChinarCEO@2026"
 }
 
@@ -24,7 +24,7 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "finance@demo.chinar.tv",
+  "email": "finance@chinar.tv",
   "password": "ChinarCEO@2026"
 }
 
