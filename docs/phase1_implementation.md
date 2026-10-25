@@ -44,15 +44,21 @@
 ## Environment Variables
 
 ```env
+# API Base URL
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000  # For local
+# NEXT_PUBLIC_API_BASE_URL=https://your-domain.com  # For production
+
 # Database
-DATABASE_URL=postgresql://...pooler...  # For app
-DATABASE_URL_UNPOOLED=postgresql://...  # For migrations
+DATABASE_URL=postgresql://...pooler...  # For app (pooled)
+DATABASE_URL_UNPOOLED=postgresql://...  # For migrations (direct)
 
 # JWT
 JWT_SECRET=cmcs-secret-key-change-this-in-production-minimum-32-characters-long
 JWT_ACCESS_EXPIRY=15m
 JWT_REFRESH_EXPIRY=7d
 ```
+
+> **Note**: Copy `.env.example` to `.env.local` and update with your actual values.
 
 ## Database Tables Created
 

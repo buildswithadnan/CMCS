@@ -2,6 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+// API Base URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+
 interface User {
   id: string;
   employeeId: string;
@@ -65,7 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Fetch current user data
   async function fetchCurrentUser(token: string) {
     try {
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -91,7 +94,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Login function
   async function login(email: string, password: string) {
-    const response = await fetch('/api/auth/login', {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +123,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   async function logout() {
     if (refreshToken) {
       try {
-        await fetch('/api/auth/logout', {
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -146,7 +149,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw new Error('No refresh token available');
     }
 
-    const response = await fetch('/api/auth/refresh', {
+    const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
